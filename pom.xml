@@ -14,8 +14,8 @@
   <groupId>fr.hb.mlang</groupId>
   <artifactId>electricity-business</artifactId>
   <version>0.0.1-SNAPSHOT</version>
-  <name>electricity-business</name>
-  <description>electricity-business</description>
+  <name>Electricity Business REST API</name>
+  <description>App to rent or book personal EV charging stations</description>
   <url/>
   <licenses>
     <license/>
