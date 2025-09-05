@@ -6,14 +6,27 @@ Vehicle) charging station to users, and book other users' charging stations.
 
 ## Environment variables
 
-### With IntelliJ IDEA
+Since the goal is to deploy it and be able to test this app on a mobile device, this project uses
+environment variables. Here are a few ways to set the environment variables to be able to use this
+project.
 
-Set as environment variables or with your IDE configuration, or simply replace the variables in
-`application-*.properties` files with your own values (but do **NOT** push to GitHub):
+### 1. Using IntelliJ IDEA
+
+With Intellij IDEA, environment variables can be set directly in the IDE:
+
+- Click on the `Run / Debug Configurations` button (next to the buttons `Run` & `Debug`)
+- `Edit Configurations`
+- Then allow environment variables in `Modify Options`.
+- Now, write the variables below with your own values in the relevant field and IntelliJ will
+  automatically read them when starting the app.
+
+Note: profiles (`dev`, `prod`, etc.) are also set there and might need to be set up as well.
 
 ```yaml
+  # The following values are examples and not be used for live applications 
+
   # App
-  APP_BASE_URL=http://localhost:8080/api/v1
+  APP_BASE_URL=http://localhost:8080
 
   # Database
   MYSQL_DATABASE=db_electricity_business
@@ -35,8 +48,17 @@ Set as environment variables or with your IDE configuration, or simply replace t
   JWT_PASSWORD_TTL_MS=900000
 ```
 
-### With local environment variables
-(ex: Linux `.bashrc`)
+### 2. With local environment variables
+
+If you're setting up a full environment (for example, deploying the app on your own server), you
+might want to set these environment variables directly on your device. In this case, refer to your
+operating system's documentation to set environment variables.
+
+### 3. Other methods
+
+Other methods to set environment variables exist, one of them would be to add a
+`application-dev.properties` file, add it to the `.gitignore` file and add the environment variables
+in plain text. Perhaps not the best implementation, but the easiest.
 
 ## Dependencies (soon)
 

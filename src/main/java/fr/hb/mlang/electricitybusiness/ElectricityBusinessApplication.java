@@ -15,8 +15,6 @@ public class ElectricityBusinessApplication {
   }
 
   //TODO:
-  // - Add explanation (why & how with IntelliJ + possible with local env) & variable names in README file
-  // - Continue config, set & test other env variables
   // - Create an AppProperties files to use instead of @Value everywhere
   // - Create a StartupCheck file that verifies the presence of env variables before start up
   // - Remove this
