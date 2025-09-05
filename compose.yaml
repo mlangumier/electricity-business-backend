@@ -1,37 +1,37 @@
-# TODO: get explanations/clarifications on `compose.yaml` suggested setup
-# TODO: verify `.env` placement in project structure
-# TODO: check dev auto-start & prod build with MySQL on docker container (or need MySQL server?)
-
 services:
   mysql:
-    image: mysql:8.4         #LTS
-    container_name: eb-mysql
-    restart: unless-stopped
+    image: mysql:8.4          # LTS
+    container_name: electricity-business-mysql
+#    restart: unless-stopped
     environment:
+#      MYSQL_DATABASE: db_electricity_business
       MYSQL_DATABASE: ${MYSQL_DATABASE}
-      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD}
-      MYSQL_USER: ${MYSQL_USER}
-      MYSQL_PASSWORD: ${MYSQL_PASSWORD}
-      MYSQL_ROOT_HOST: '%'   #Allow remote connections (dev)
-#    command:
+      MYSQL_ROOT_PASSWORD: root
+      MYSQL_USER: dev
+      MYSQL_PASSWORD: dev@password
+#      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD}
+#      MYSQL_USER: ${MYSQL_USER}
+#      MYSQL_PASSWORD: ${MYSQL_PASSWORD}
+      MYSQL_ROOT_HOST: '%'    # Allow remote connections (dev)
+#    command:                  # Database settings
 #      - --default-authentication-plugin=mysql_native_password
 #      - --character-set-server=utf8mb4
 #      - --collection-server=utf8mb4_unicode_ci
 #      - --lower_case_table_names=1
-    volumes:
-      - eb_mysql_data:/var/lib/mysql
+#    volumes:                  # Persist data between restarts
+#      - eb_mysql_data:/var/lib/mysql
     ports:
-      - "3306:3306"
-#    healthcheck:
+      - 3306:3306
+#    healthcheck:               # Wait until database is ready
 #      test: ["CMD-SHELL", "mysqladmin ping -h 127.0.0.1 -u$$MYSQL_USER -p$$MYSQL_PASSWORD || exit 1"]
 #      interval: 10s
 #      timeout: 5s
 #      retries: 10
-    networks:
-      - eb-net
+#    networks:
+#      - eb-net
 
-volumes:
-  eb_mysql_data:
+#volumes:
+#  eb_mysql_data:
 
-networks:
-  eb-net:
+#networks:
+#  eb-net:
