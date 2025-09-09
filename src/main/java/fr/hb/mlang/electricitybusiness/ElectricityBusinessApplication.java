@@ -1,28 +1,14 @@
 package fr.hb.mlang.electricitybusiness;
 
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.boot.CommandLineRunner;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
-import org.springframework.context.annotation.Bean;
-import org.springframework.util.Assert;
+import org.springframework.boot.context.properties.ConfigurationPropertiesScan;
 
 @SpringBootApplication
+@ConfigurationPropertiesScan // Scan config files: allow initial set up check
 public class ElectricityBusinessApplication {
 
   public static void main(String[] args) {
     SpringApplication.run(ElectricityBusinessApplication.class, args);
-  }
-
-  //TODO:
-  // - Create an AppProperties files to use instead of @Value everywhere
-  // - Create a StartupCheck file that verifies the presence of env variables before start up
-  // - Remove this
-  @Bean
-  CommandLineRunner checkEnv(@Value("${app.base.url}") String baseUrl) {
-    return args -> {
-      Assert.notNull(baseUrl, "'app_base_url' env variable not found");
-      System.out.println("App base URL = " + baseUrl);
-    };
   }
 }

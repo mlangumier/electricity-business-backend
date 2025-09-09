@@ -42,10 +42,10 @@ Note: profiles (`dev`, `prod`, etc.) are also set there and might need to be set
 
   # JWT
   JWT_ISSUER=<jwt-issuer-token>
-  JWT_ACCESS_TTL_MS=300000
-  JWT_REFRESH_TTL_MS=604800000
-  JWT_VERIFICATION_TTL_MS=2592000000
-  JWT_PASSWORD_TTL_MS=900000
+  JWT_ACCESS=5m
+  JWT_REFRESH=7d
+  JWT_VERIFICATION=1d
+  JWT_PASSWORD=15m
 ```
 
 ### 2. With local environment variables
