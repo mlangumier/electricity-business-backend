@@ -62,4 +62,6 @@ in plain text. Perhaps not the best implementation, but the easiest.
 
 ## Dependencies (soon)
 
-## UML Class Diagram (soon)
+## UML Class Diagram
+
+![Class Diagram](./assets/class_diagram.png)
