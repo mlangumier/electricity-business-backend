@@ -37,6 +37,8 @@ allowing for cancellation, and many more!
   * [Deployment](#deployment)
     * [Procedure](#procedure)
     * [Rollback](#rollback)
+  * [Other information](#other-information)
+    * [UML Class Diagram](#uml-class-diagram)
 <!-- TOC -->
 
 ---
@@ -433,8 +435,8 @@ Run the script with the following command:
 
 [//]: # (repositories, host dashboards)
 
-[//]: # (## Other information)
+## Other information
 
-[//]: # (### UML Class Diagram)
+### UML Class Diagram
 
-[//]: # (TODO: Add class diagram)
+![Class Diagram](./assets/class_diagram.png)

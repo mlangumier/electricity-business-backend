@@ -1,0 +1,122 @@
+@startuml
+
+enum Role {
+    USER,
+    ADMIN,
+    SUPERADMIN
+}
+
+enum BookingStatus {
+    PENDING,
+    APPROVED,
+    REJECTED,
+    CANCELLED
+}
+
+enum PaymentStatus {
+    PENDING,
+    SUCCESS,
+    FAILED,
+    WAITING
+}
+
+class User {
+    id: UUID
+    email: String
+    phoneNumber: String
+    passwordHash: String
+    role: Role
+    verified: Boolean
+    updatedAt: Instant
+    lastLogin: Instant
+    createdAt: Instant
+}
+
+class UserProfile {
+    id: UUID
+    firstName: String
+    lastName: String
+    dateOfBirth: LocalDate
+    homeAddress: String
+    preferences: JSON
+    avatar: String
+}
+
+class Location {
+    id: UUID
+    address: String
+    address2: String
+    city: String
+    postalCode: String
+    coordinates: Point
+    otherInformation: String
+}
+
+class Station {
+    id: UUID
+    label: String
+    description: String
+    maxPower: Decimal
+    wallMounted: Boolean
+    price: BigDecimal
+    available: Boolean
+}
+
+class StationPicture {
+    id: UUID
+    fileName: String
+    url: String
+    alt: String
+    featured: Boolean
+}
+
+class Booking {
+    id: UUID
+    start: Instant
+    end: Instant
+    status: BookingStatus
+}
+
+class Payment {
+    id: UUID
+    externalReference: UUID
+    status: PaymentStatus
+    amount: BigDecimal
+}
+
+class EmailVerificationToken {
+    id: UUID
+    tokenHash: String
+    expiresAt: Instant
+}
+
+class PasswordResetToken {
+    id: UUID
+    tokenHash: String
+    expiresAt: Instant
+}
+
+class RefreshToken {
+    id: UUID
+    tokenHash: String
+    expiresAt: Instant
+    deviceInfo: String
+    revoked: Boolean
+}
+
+UserProfile "1" --* "1" User: defines
+User "1" -- "0..*" Location: owns
+Station "0..*" -- "1" Location: locates
+Station "1" -- "1..*" StationPicture: represents
+Station "1" -- "0..*" Booking: concerns
+User "1" -- "0..*" Booking: requests
+Payment "1" -- "1" Booking: confirms
+EmailVerificationToken "0..1" -- "1" User: needs
+PasswordResetToken "1" -- "1" User: asks
+RefreshToken "1..*" -- "1" User: has
+
+User .. Role
+Booking .. BookingStatus
+Payment .. PaymentStatus
+
+@enduml
