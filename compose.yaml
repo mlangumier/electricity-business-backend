@@ -8,11 +8,6 @@ services:
       MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD}
       MYSQL_USER: ${MYSQL_USER}
       MYSQL_PASSWORD: ${MYSQL_PASSWORD}
-    command:                  # Database settings
-      - --default-authentication-plugin=mysql_native_password
-      - --character-set-server=utf8mb4
-      - --collection-server=utf8mb4_unicode_ci
-      - --lower_case_table_names=1
     volumes:                  # Persist data between restarts
       - eb_mysql_data:/var/lib/mysql
     ports:
