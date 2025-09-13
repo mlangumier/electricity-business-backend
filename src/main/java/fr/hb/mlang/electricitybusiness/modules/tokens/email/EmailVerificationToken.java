@@ -3,39 +3,53 @@ package fr.hb.mlang.electricitybusiness.modules.tokens.email;
 import fr.hb.mlang.electricitybusiness.modules.user.domain.User;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
+import jakarta.persistence.EntityListeners;
+import jakarta.persistence.FetchType;
 import jakarta.persistence.Id;
+import jakarta.persistence.Index;
 import jakarta.persistence.JoinColumn;
+import jakarta.persistence.MapsId;
 import jakarta.persistence.OneToOne;
 import jakarta.persistence.Table;
+import jakarta.validation.constraints.Future;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Size;
 import java.time.Instant;
 import java.util.Objects;
 import java.util.UUID;
 import org.springframework.data.annotation.CreatedDate;
+import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
+@EntityListeners(AuditingEntityListener.class)
 @Entity
-@Table(name = "email_verification_token")
+@Table(name = "email_verification_token", indexes = {
+    @Index(name = "index_evt_expires_at", columnList = "expires_at")
+})
 public class EmailVerificationToken {
 
   @Id
-  @GeneratedValue(strategy = GenerationType.UUID)
-  @Column(name = "id", nullable = false, updatable = false)
   private UUID id;
 
-  @Column(name = "token_hash", nullable = false, updatable = false)
+  @MapsId
+  @OneToOne(optional = false, fetch = FetchType.LAZY)
+  @JoinColumn(name = "user_id", nullable = false)
+  private User user;
+
+  @NotBlank
+  @Size(max = 64)
+  @Column(name = "token_hash", nullable = false, updatable = false, unique = true, length = 64)
   private String tokenHash;
 
   @CreatedDate
   @Column(name = "created_at", nullable = false, updatable = false)
   private Instant createdAt;
 
+  @NotNull
+  @Future
   @Column(name = "expires_at", nullable = false, updatable = false)
   private Instant expiresAt;
 
-  @OneToOne(optional = false)
-  @JoinColumn(name = "user_id")
-  private User user;
 
   /**
    * Required by JPA
@@ -43,18 +57,13 @@ public class EmailVerificationToken {
   public EmailVerificationToken() {
   }
 
-  public EmailVerificationToken(
-      UUID id,
-      String tokenHash,
-      Instant createdAt,
-      Instant expiresAt,
-      User user
-  ) {
-    this.id = id;
-    this.tokenHash = tokenHash;
-    this.createdAt = createdAt;
-    this.expiresAt = expiresAt;
+  /**
+   * Creates a token to verify the user's email. PK inherited from the user (see {@link MapsId}).
+   */
+  public EmailVerificationToken(User user, String tokenHash, Instant expiresAt) {
     this.user = user;
+    this.tokenHash = tokenHash;
+    this.expiresAt = expiresAt;
   }
 
   public UUID getId() {

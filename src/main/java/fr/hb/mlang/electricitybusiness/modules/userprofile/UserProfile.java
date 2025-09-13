@@ -4,12 +4,15 @@ import fr.hb.mlang.electricitybusiness.modules.user.domain.User;
 import fr.hb.mlang.electricitybusiness.shared.jpa.AuditedEntity;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
+import jakarta.persistence.FetchType;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
+import jakarta.persistence.MapsId;
 import jakarta.persistence.OneToOne;
 import jakarta.persistence.Table;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.Past;
+import jakarta.validation.constraints.Size;
 import java.time.LocalDate;
 import java.util.Objects;
 import java.util.UUID;
@@ -19,31 +22,39 @@ import java.util.UUID;
 public class UserProfile extends AuditedEntity {
 
   @Id
-  @GeneratedValue(strategy = GenerationType.UUID)
-  @Column(name = "id", updatable = false, nullable = false)
   private UUID id;
 
-  @Column(name = "first_name", nullable = false)
+  @MapsId
+  @OneToOne(optional = false, fetch = FetchType.LAZY)
+  @JoinColumn(name = "id", nullable = false)
+  private User user;
+
+  @NotBlank
+  @Size(min = 2, max = 50)
+  @Column(name = "first_name", nullable = false, length = 50)
   private String firstName;
 
-  @Column(name = "last_name", nullable = false)
+  @NotBlank
+  @Size(min = 2, max = 50)
+  @Column(name = "last_name", nullable = false, length = 50)
   private String lastName;
 
-  @Column(name = "date_of_birth", nullable = false)
+  @Past
+  @Column(name = "date_of_birth")
   private LocalDate dateOfBirth;
 
-  @Column(name = "home_address", nullable = false)
+  @NotBlank
+  @Size(max = 512)
+  @Column(name = "home_address", nullable = false, length = 512)
   private String homeAddress;
 
   @Column(columnDefinition = "JSON", name = "preferences", nullable = false)
-  private String preferences;
+  private String preferences = "{}";
 
-  @Column(name = "avatar")
+  @Size(max = 512)
+  @Column(name = "avatar", length = 512)
   private String avatar;
 
-  @OneToOne(optional = false)
-  @JoinColumn(name = "user_id")
-  private User user;
 
   /**
    * Required by JPA
@@ -52,23 +63,20 @@ public class UserProfile extends AuditedEntity {
   }
 
   public UserProfile(
-      UUID id,
+      User user,
       String firstName,
       String lastName,
       LocalDate dateOfBirth,
       String homeAddress,
-      String preferences,
-      String avatar,
-      User user
+      String avatar
   ) {
-    this.id = id;
+    this.user = user;
     this.firstName = firstName;
     this.lastName = lastName;
     this.dateOfBirth = dateOfBirth;
     this.homeAddress = homeAddress;
-    this.preferences = preferences;
+    this.preferences = "{}";
     this.avatar = avatar;
-    this.user = user;
   }
 
   public UUID getId() {
