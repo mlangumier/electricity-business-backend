@@ -15,9 +15,14 @@ import jakarta.persistence.Enumerated;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
+import jakarta.persistence.Index;
 import jakarta.persistence.OneToMany;
 import jakarta.persistence.OneToOne;
 import jakarta.persistence.Table;
+import jakarta.validation.constraints.Email;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.Pattern;
+import jakarta.validation.constraints.Size;
 import java.util.HashSet;
 import java.util.Objects;
 import java.util.Set;
@@ -27,7 +32,10 @@ import java.util.UUID;
  * Entity that contains basic user information, necessary for account creation.
  */
 @Entity
-@Table(name = "users")
+@Table(name = "users", indexes = {
+    @Index(name = "index_users_email", columnList = "email"),
+    @Index(name = "index_users_phone", columnList = "phone_number")
+})
 public class User extends AuditedEntity {
 
   @Id
@@ -35,14 +43,19 @@ public class User extends AuditedEntity {
   @Column(name = "id", nullable = false, updatable = false)
   private UUID id;
 
-  @Column(name = "email", nullable = false, unique = true)
+  @NotBlank
+  @Email
+  @Size(max = 255)
+  @Column(name = "email", nullable = false, unique = true, length = 255)
   private String email;
 
-  @Column(name = "phone_number", unique = true)
+  @Size(max = 15)
+  @Pattern(regexp = "^\\+?[0-9 .()-]{7,15}$")
+  @Column(name = "phone_number", unique = true, length = 15)
   private String phoneNumber;
 
   @Enumerated(EnumType.STRING)
-  @Column(name = "role", nullable = false)
+  @Column(name = "role", nullable = false, length = 32)
   private Role role;
 
   @OneToOne(mappedBy = "user", cascade = CascadeType.ALL)
@@ -57,13 +70,13 @@ public class User extends AuditedEntity {
   @OneToMany(mappedBy = "customer", cascade = CascadeType.ALL)
   private Set<Booking> bookings = new HashSet<>();
 
-  @OneToOne(mappedBy = "user", cascade = CascadeType.ALL)
+  @OneToOne(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
   private EmailVerificationToken emailVerificationToken;
 
-  @OneToOne(mappedBy = "user", cascade = CascadeType.ALL)
+  @OneToOne(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
   private PasswordResetToken passwordResetToken;
 
-  @OneToMany(mappedBy = "user", cascade = CascadeType.ALL)
+  @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
   private Set<RefreshToken> refreshTokens = new HashSet<>();
 
   /**
