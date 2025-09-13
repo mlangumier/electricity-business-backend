@@ -1,4 +1,4 @@
-package fr.hb.mlang.electricitybusiness.modules.token.refresh;
+package fr.hb.mlang.electricitybusiness.modules.tokens.password;
 
 import fr.hb.mlang.electricitybusiness.modules.user.domain.User;
 import jakarta.persistence.Column;
@@ -7,7 +7,7 @@ import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
-import jakarta.persistence.ManyToOne;
+import jakarta.persistence.OneToOne;
 import jakarta.persistence.Table;
 import java.time.Instant;
 import java.util.Objects;
@@ -15,8 +15,8 @@ import java.util.UUID;
 import org.springframework.data.annotation.CreatedDate;
 
 @Entity
-@Table(name = "refresh_token")
-public class RefreshToken {
+@Table(name = "password_reset_token")
+public class PasswordResetToken  {
 
   @Id
   @GeneratedValue(strategy = GenerationType.UUID)
@@ -33,34 +33,27 @@ public class RefreshToken {
   @Column(name = "expires_at", nullable = false, updatable = false)
   private Instant expiresAt;
 
-  @Column(name = "device_info")
-  private String deviceInfo;
-
-  @Column(name = "is_revoked", nullable = false)
-  private Boolean revoked;
-
-  @ManyToOne
-  @JoinColumn(name = "user_id", nullable = false)
+  @OneToOne(optional = false)
+  @JoinColumn(name = "user_id")
   private User user;
 
-  public RefreshToken() {
-    // Required by JPA
+  /**
+   * Required by JPA
+   */
+  public PasswordResetToken() {
   }
 
-  public RefreshToken(
+  public PasswordResetToken(
       UUID id,
       String tokenHash,
       Instant createdAt,
       Instant expiresAt,
-      String deviceInfo,
       User user
   ) {
     this.id = id;
     this.tokenHash = tokenHash;
     this.createdAt = createdAt;
     this.expiresAt = expiresAt;
-    this.deviceInfo = deviceInfo;
-    this.revoked = Boolean.FALSE;
     this.user = user;
   }
 
@@ -96,22 +89,6 @@ public class RefreshToken {
     this.expiresAt = expiresAt;
   }
 
-  public String getDeviceInfo() {
-    return deviceInfo;
-  }
-
-  public void setDeviceInfo(String deviceInfo) {
-    this.deviceInfo = deviceInfo;
-  }
-
-  public Boolean getRevoked() {
-    return revoked;
-  }
-
-  public void setRevoked(Boolean revoked) {
-    this.revoked = revoked;
-  }
-
   public User getUser() {
     return user;
   }
@@ -122,7 +99,7 @@ public class RefreshToken {
 
   @Override
   public boolean equals(Object o) {
-    if (!(o instanceof RefreshToken that)) {
+    if (!(o instanceof PasswordResetToken that)) {
       return false;
     }
     return Objects.equals(getId(), that.getId());
@@ -135,13 +112,11 @@ public class RefreshToken {
 
   @Override
   public String toString() {
-    return "RefreshToken{" +
+    return "PasswordResetToken{" +
         "id=" + id +
         ", tokenHash='" + tokenHash + '\'' +
         ", createdAt=" + createdAt +
         ", expiresAt=" + expiresAt +
-        ", deviceInfo='" + deviceInfo + '\'' +
-        ", revoked=" + revoked +
         '}';
   }
 }

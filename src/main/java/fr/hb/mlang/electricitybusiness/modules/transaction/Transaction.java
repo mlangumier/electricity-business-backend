@@ -35,12 +35,14 @@ public class Transaction extends AuditedEntity {
   @Column(name = "amount", nullable = false, updatable = false)
   private BigDecimal amount;
 
-  @OneToOne
-  @JoinColumn(name = "booking_id", nullable = false)
+  @OneToOne(optional = false)
+  @JoinColumn(name = "booking_id")
   private Booking booking;
 
+  /**
+   * Required by JPA
+   */
   public Transaction() {
-    // Required by JPA
   }
 
   public Transaction(

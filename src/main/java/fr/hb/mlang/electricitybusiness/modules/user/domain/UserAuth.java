@@ -11,6 +11,10 @@ import java.time.Instant;
 import java.util.Objects;
 import java.util.UUID;
 
+/**
+ * Entity that contains the authentication user data. Shares their <code>Primary Key</code> with the
+ * {@link  User} entity, since they are the same semantic entity.
+ */
 @Entity
 @Table(name = "user_auth")
 public class UserAuth {
@@ -18,30 +22,42 @@ public class UserAuth {
   @Id
   private UUID id;
 
+  @MapsId // Defines a shared PK for both entities
+  @OneToOne(optional = false)
+  @JoinColumn(name = "id")
+  private User user;
+
   @Column(name = "password_hash", nullable = false)
   private String passwordHash;
 
-  @Column(name = "is_verified", nullable = false)
-  private Boolean verified;
+  @Column(name = "is_email_verified", nullable = false)
+  private boolean emailVerified;
 
   @Column(name = "last_login", nullable = false)
   private Instant lastLogin;
 
-  @MapsId
-  @OneToOne
-  @JoinColumn(name = "id", nullable = false)
-  private User user;
-
+  /**
+   * Required by JPA
+   */
   public UserAuth() {
-    // Required by JPA
   }
 
-  public UserAuth(UUID id, String passwordHash, Instant lastLogin, User user) {
-    this.id = id;
-    this.passwordHash = passwordHash;
-    this.verified = Boolean.FALSE;
-    this.lastLogin = lastLogin;
+  /**
+   * Creates credentials for the given {@link User}. The Primary Key will be inherited from the user
+   * (see {@link MapsId}).
+   */
+  public UserAuth(User user, String passwordHash) {
     this.user = user;
+    this.passwordHash = passwordHash;
+    this.emailVerified = false;
+    this.lastLogin = null;
+  }
+
+  public UserAuth(User user, String passwordHash, boolean emailVerified, Instant lastLogin) {
+    this.user = user;
+    this.passwordHash = passwordHash;
+    this.emailVerified = emailVerified;
+    this.lastLogin = lastLogin;
   }
 
   public UUID getId() {
@@ -60,12 +76,12 @@ public class UserAuth {
     this.passwordHash = passwordHash;
   }
 
-  public Boolean getVerified() {
-    return verified;
+  public boolean getEmailVerified() {
+    return emailVerified;
   }
 
-  public void setVerified(Boolean verified) {
-    this.verified = verified;
+  public void setEmailVerified(boolean verified) {
+    this.emailVerified = verified;
   }
 
   public Instant getLastLogin() {
@@ -102,7 +118,7 @@ public class UserAuth {
     return "UserAuth{" +
         "id=" + id +
         ", passwordHash='" + passwordHash + '\'' +
-        ", verified=" + verified +
+        ", verified=" + emailVerified +
         ", lastLogin=" + lastLogin +
         '}';
   }
