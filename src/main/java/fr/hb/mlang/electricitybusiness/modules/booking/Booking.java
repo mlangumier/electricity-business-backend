@@ -39,19 +39,21 @@ public class Booking extends AuditedEntity {
   @Column(name = "status", nullable = false)
   private BookingStatus status;
 
-  @ManyToOne
+  @ManyToOne(optional = false)
   @JoinColumn(name = "station_id", nullable = false)
   private Station station;
 
-  @ManyToOne
-  @JoinColumn(name = "customer_id", nullable = false)
+  @ManyToOne(optional = false)
+  @JoinColumn(name = "customer_id")
   private User customer;
 
   @OneToOne(mappedBy = "booking", cascade = CascadeType.ALL)
   private Transaction transaction;
 
+  /**
+   * Required by JPA
+   */
   public Booking() {
-    // Required by JPA
   }
 
   public Booking(

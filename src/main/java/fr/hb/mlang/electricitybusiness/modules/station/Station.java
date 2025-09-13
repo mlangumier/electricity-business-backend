@@ -39,19 +39,19 @@ public class Station extends AuditedEntity {
   private Integer maxPower;
 
   @Column(name = "is_wall_mounted", nullable = false)
-  private Boolean wallMounted;
+  private boolean wallMounted;
 
   @Column(name = "price", nullable = false)
   private BigDecimal price;
 
   @Column(name = "is_available", nullable = false)
-  private Boolean available;
+  private boolean available;
 
   @Column(name = "additional_info")
   private String additionalInfo;
 
-  @ManyToOne
-  @JoinColumn(name = "location_id", nullable = false)
+  @ManyToOne(optional = false)
+  @JoinColumn(name = "location_id")
   private Location location;
 
   @OneToMany(mappedBy = "station", cascade = CascadeType.ALL, orphanRemoval = true)
@@ -60,8 +60,10 @@ public class Station extends AuditedEntity {
   @OneToMany(mappedBy = "station", cascade = CascadeType.ALL)
   private Set<Booking> bookings = new HashSet<>();
 
+  /**
+   * Required by JPA
+   */
   public Station() {
-    // Required by JPA
   }
 
   public Station(
@@ -69,9 +71,9 @@ public class Station extends AuditedEntity {
       String label,
       String description,
       Integer maxPower,
-      Boolean wallMounted,
+      boolean wallMounted,
       BigDecimal price,
-      Boolean available,
+      boolean available,
       String additionalInfo,
       Location location
   ) {
@@ -118,11 +120,11 @@ public class Station extends AuditedEntity {
     this.maxPower = maxPower;
   }
 
-  public Boolean getWallMounted() {
+  public boolean getWallMounted() {
     return wallMounted;
   }
 
-  public void setWallMounted(Boolean wallMounted) {
+  public void setWallMounted(boolean wallMounted) {
     this.wallMounted = wallMounted;
   }
 
@@ -134,11 +136,11 @@ public class Station extends AuditedEntity {
     this.price = price;
   }
 
-  public Boolean getAvailable() {
+  public boolean getAvailable() {
     return available;
   }
 
-  public void setAvailable(Boolean available) {
+  public void setAvailable(boolean available) {
     this.available = available;
   }
 

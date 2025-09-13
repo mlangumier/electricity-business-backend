@@ -8,7 +8,6 @@ import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
-import jakarta.persistence.MapsId;
 import jakarta.persistence.OneToOne;
 import jakarta.persistence.Table;
 import java.time.LocalDate;
@@ -21,7 +20,7 @@ public class UserProfile extends AuditedEntity {
 
   @Id
   @GeneratedValue(strategy = GenerationType.UUID)
-  @Column(name = "id", nullable = false, updatable = false)
+  @Column(name = "id", updatable = false, nullable = false)
   private UUID id;
 
   @Column(name = "first_name", nullable = false)
@@ -42,13 +41,14 @@ public class UserProfile extends AuditedEntity {
   @Column(name = "avatar")
   private String avatar;
 
-  @MapsId
-  @OneToOne
-  @JoinColumn(name = "id")
+  @OneToOne(optional = false)
+  @JoinColumn(name = "user_id")
   private User user;
 
+  /**
+   * Required by JPA
+   */
   public UserProfile() {
-    // Required by JPA
   }
 
   public UserProfile(
@@ -58,7 +58,8 @@ public class UserProfile extends AuditedEntity {
       LocalDate dateOfBirth,
       String homeAddress,
       String preferences,
-      String avatar
+      String avatar,
+      User user
   ) {
     this.id = id;
     this.firstName = firstName;
@@ -67,6 +68,7 @@ public class UserProfile extends AuditedEntity {
     this.homeAddress = homeAddress;
     this.preferences = preferences;
     this.avatar = avatar;
+    this.user = user;
   }
 
   public UUID getId() {

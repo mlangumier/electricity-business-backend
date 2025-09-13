@@ -1,4 +1,4 @@
-package fr.hb.mlang.electricitybusiness.modules.token.password;
+package fr.hb.mlang.electricitybusiness.modules.tokens.email;
 
 import fr.hb.mlang.electricitybusiness.modules.user.domain.User;
 import jakarta.persistence.Column;
@@ -15,8 +15,8 @@ import java.util.UUID;
 import org.springframework.data.annotation.CreatedDate;
 
 @Entity
-@Table(name = "password_reset_token")
-public class PasswordResetToken  {
+@Table(name = "email_verification_token")
+public class EmailVerificationToken {
 
   @Id
   @GeneratedValue(strategy = GenerationType.UUID)
@@ -33,15 +33,17 @@ public class PasswordResetToken  {
   @Column(name = "expires_at", nullable = false, updatable = false)
   private Instant expiresAt;
 
-  @OneToOne
-  @JoinColumn(name = "user_id", nullable = false)
+  @OneToOne(optional = false)
+  @JoinColumn(name = "user_id")
   private User user;
 
-  public PasswordResetToken() {
-    // Required by JPA
+  /**
+   * Required by JPA
+   */
+  public EmailVerificationToken() {
   }
 
-  public PasswordResetToken(
+  public EmailVerificationToken(
       UUID id,
       String tokenHash,
       Instant createdAt,
@@ -97,20 +99,20 @@ public class PasswordResetToken  {
 
   @Override
   public boolean equals(Object o) {
-    if (!(o instanceof PasswordResetToken that)) {
+    if (!(o instanceof EmailVerificationToken that)) {
       return false;
     }
-    return Objects.equals(getId(), that.getId());
+    return Objects.equals(id, that.id);
   }
 
   @Override
   public int hashCode() {
-    return Objects.hashCode(getId());
+    return Objects.hashCode(id);
   }
 
   @Override
   public String toString() {
-    return "PasswordResetToken{" +
+    return "EmailVerificationToken{" +
         "id=" + id +
         ", tokenHash='" + tokenHash + '\'' +
         ", createdAt=" + createdAt +
