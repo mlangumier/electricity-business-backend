@@ -2,9 +2,9 @@ package fr.hb.mlang.electricitybusiness.modules.user.domain;
 
 import fr.hb.mlang.electricitybusiness.modules.booking.Booking;
 import fr.hb.mlang.electricitybusiness.modules.location.Location;
-import fr.hb.mlang.electricitybusiness.modules.token.email.EmailVerificationToken;
-import fr.hb.mlang.electricitybusiness.modules.token.password.PasswordResetToken;
-import fr.hb.mlang.electricitybusiness.modules.token.refresh.RefreshToken;
+import fr.hb.mlang.electricitybusiness.modules.tokens.email.EmailVerificationToken;
+import fr.hb.mlang.electricitybusiness.modules.tokens.password.PasswordResetToken;
+import fr.hb.mlang.electricitybusiness.modules.tokens.refresh.RefreshToken;
 import fr.hb.mlang.electricitybusiness.modules.userprofile.UserProfile;
 import fr.hb.mlang.electricitybusiness.shared.jpa.AuditedEntity;
 import jakarta.persistence.CascadeType;
@@ -23,14 +23,12 @@ import java.util.Objects;
 import java.util.Set;
 import java.util.UUID;
 
+/**
+ * Entity that contains basic user information, necessary for account creation.
+ */
 @Entity
 @Table(name = "users")
 public class User extends AuditedEntity {
-  //TODO: Split into:
-  // - `User`: domain, only user info no credentials (remove password)
-  // - `UserAuth` (new table): authentication only (user credentials), same `id`(PK) as User
-  // - `SecurityUser`: implements UserDetails, adapts User-UserAuth
-  // -> Separation of concerns, easy to scale
 
   @Id
   @GeneratedValue(strategy = GenerationType.UUID)
@@ -47,7 +45,7 @@ public class User extends AuditedEntity {
   @Column(name = "role", nullable = false)
   private Role role;
 
-  @OneToOne(mappedBy = "user", cascade = CascadeType.ALL, optional = false)
+  @OneToOne(mappedBy = "user", cascade = CascadeType.ALL)
   private UserAuth auth;
 
   @OneToOne(mappedBy = "user", cascade = CascadeType.ALL)
@@ -68,8 +66,10 @@ public class User extends AuditedEntity {
   @OneToMany(mappedBy = "user", cascade = CascadeType.ALL)
   private Set<RefreshToken> refreshTokens = new HashSet<>();
 
+  /**
+   * Required by JPA
+   */
   public User() {
-    // Required by JPA
   }
 
   public User(UUID id, String email, String phoneNumber, Role role) {

@@ -29,14 +29,16 @@ public class StationPicture extends AuditedEntity {
   private String type;
 
   @Column(name = "is_featured", nullable = false)
-  private Boolean featured;
+  private boolean featured;
 
-  @ManyToOne
-  @JoinColumn(name = "station_id", nullable = false)
+  @ManyToOne(optional = false)
+  @JoinColumn(name = "station_id")
   private Station station;
 
+  /**
+   * Required by JPA
+   */
   public StationPicture() {
-    // Required by JPA
   }
 
   public StationPicture(UUID id, String url, String type, Boolean featured, Station station) {

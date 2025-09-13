@@ -43,15 +43,17 @@ public class Location extends AuditedEntity {
   @Column(name = "coordinates", nullable = false)
   private Point coordinates;
 
-  @ManyToOne
-  @JoinColumn(name = "user_id", nullable = false)
+  @ManyToOne(optional = false)
+  @JoinColumn(name = "user_id")
   private User user;
 
   @OneToMany(mappedBy = "location", cascade = CascadeType.ALL)
   private Set<Station> stations = new HashSet<>();
 
+  /**
+   * Required by JPA
+   */
   public Location() {
-    // Required by JPA
   }
 
   public Location(
