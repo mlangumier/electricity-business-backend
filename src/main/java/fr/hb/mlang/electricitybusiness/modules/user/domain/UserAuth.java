@@ -1,12 +1,16 @@
 package fr.hb.mlang.electricitybusiness.modules.user.domain;
 
+import fr.hb.mlang.electricitybusiness.shared.jpa.AuditedEntity;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
+import jakarta.persistence.FetchType;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.MapsId;
 import jakarta.persistence.OneToOne;
 import jakarta.persistence.Table;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.Size;
 import java.time.Instant;
 import java.util.Objects;
 import java.util.UUID;
@@ -17,23 +21,25 @@ import java.util.UUID;
  */
 @Entity
 @Table(name = "user_auth")
-public class UserAuth {
+public class UserAuth extends AuditedEntity {
 
   @Id
   private UUID id;
 
   @MapsId // Defines a shared PK for both entities
-  @OneToOne(optional = false)
-  @JoinColumn(name = "id")
+  @OneToOne(optional = false, fetch = FetchType.LAZY)
+  @JoinColumn(name = "id", nullable = false)
   private User user;
 
-  @Column(name = "password_hash", nullable = false)
+  @NotBlank
+  @Size(max = 60) // 60 is perfect for BCrypt; increase to 255 if we need to use something else
+  @Column(name = "password_hash", nullable = false, length = 60)
   private String passwordHash;
 
   @Column(name = "is_email_verified", nullable = false)
   private boolean emailVerified;
 
-  @Column(name = "last_login", nullable = false)
+  @Column(name = "last_login")
   private Instant lastLogin;
 
   /**

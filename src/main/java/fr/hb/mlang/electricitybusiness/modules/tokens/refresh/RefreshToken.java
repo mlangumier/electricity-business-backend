@@ -3,19 +3,30 @@ package fr.hb.mlang.electricitybusiness.modules.tokens.refresh;
 import fr.hb.mlang.electricitybusiness.modules.user.domain.User;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
+import jakarta.persistence.EntityListeners;
+import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
+import jakarta.persistence.Index;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
+import jakarta.validation.constraints.Future;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Size;
 import java.time.Instant;
 import java.util.Objects;
 import java.util.UUID;
 import org.springframework.data.annotation.CreatedDate;
+import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
+@EntityListeners(AuditingEntityListener.class)
 @Entity
-@Table(name = "refresh_token")
+@Table(name = "refresh_token", indexes = {
+    @Index(name = "index_rt_expires_at", columnList = "expires_at")
+})
 public class RefreshToken {
 
   @Id
@@ -23,24 +34,29 @@ public class RefreshToken {
   @Column(name = "id", nullable = false, updatable = false)
   private UUID id;
 
-  @Column(name = "token_hash", nullable = false, updatable = false)
+  @NotBlank
+  @Size(max = 64)
+  @Column(name = "token_hash", nullable = false, updatable = false, unique = true, length = 64)
   private String tokenHash;
 
   @CreatedDate
   @Column(name = "created_at", nullable = false, updatable = false)
   private Instant createdAt;
 
+  @NotNull
+  @Future
   @Column(name = "expires_at", nullable = false, updatable = false)
   private Instant expiresAt;
 
-  @Column(name = "device_info")
+  @Size(max = 255)
+  @Column(name = "device_info", length = 255)
   private String deviceInfo;
 
   @Column(name = "is_revoked", nullable = false)
-  private boolean revoked;
+  private boolean revoked = false;
 
-  @ManyToOne(optional = false)
-  @JoinColumn(name = "user_id")
+  @ManyToOne(optional = false, fetch = FetchType.LAZY)
+  @JoinColumn(name = "user_id", nullable = false)
   private User user;
 
   /**
@@ -49,6 +65,18 @@ public class RefreshToken {
   public RefreshToken() {
   }
 
+  /**
+   * Minimal constructor
+   */
+  public RefreshToken(String tokenHash, Instant expiresAt, User user) {
+    this.tokenHash = tokenHash;
+    this.expiresAt = expiresAt;
+    this.user = user;
+  }
+
+  /**
+   * Full constructor
+   */
   public RefreshToken(
       UUID id,
       String tokenHash,
@@ -143,8 +171,9 @@ public class RefreshToken {
         ", tokenHash='" + tokenHash + '\'' +
         ", createdAt=" + createdAt +
         ", expiresAt=" + expiresAt +
-        ", deviceInfo='" + deviceInfo + '\'' +
+        (deviceInfo != null ? ", deviceInfo=" + deviceInfo + '\'' : "") +
         ", revoked=" + revoked +
         '}';
   }
 }
+
