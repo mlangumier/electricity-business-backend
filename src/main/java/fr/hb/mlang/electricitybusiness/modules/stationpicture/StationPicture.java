@@ -4,17 +4,24 @@ import fr.hb.mlang.electricitybusiness.modules.station.Station;
 import fr.hb.mlang.electricitybusiness.shared.jpa.AuditedEntity;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
+import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
+import jakarta.persistence.Index;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.Size;
 import java.util.Objects;
 import java.util.UUID;
 
 @Entity
-@Table(name = "station_pictures")
+@Table(name = "station_pictures", indexes = {
+    @Index(name = "index_picture_station", columnList = "station_id"),
+    @Index(name = "index_picture_featured", columnList = "station_id, is_featured")
+})
 public class StationPicture extends AuditedEntity {
 
   @Id
@@ -22,17 +29,20 @@ public class StationPicture extends AuditedEntity {
   @Column(name = "id", updatable = false, nullable = false)
   private UUID id;
 
-  @Column(name = "url", nullable = false)
+  @NotBlank
+  @Size(max = 512)
+  @Column(name = "url", nullable = false, length = 512)
   private String url;
 
-  @Column(name = "type", nullable = false)
+  @NotBlank
+  @Column(name = "type", nullable = false, length = 10)
   private String type;
 
   @Column(name = "is_featured", nullable = false)
   private boolean featured;
 
-  @ManyToOne(optional = false)
-  @JoinColumn(name = "station_id")
+  @ManyToOne(optional = false, fetch = FetchType.LAZY)
+  @JoinColumn(name = "station_id", nullable = false)
   private Station station;
 
   /**
@@ -41,8 +51,7 @@ public class StationPicture extends AuditedEntity {
   public StationPicture() {
   }
 
-  public StationPicture(UUID id, String url, String type, Boolean featured, Station station) {
-    this.id = id;
+  public StationPicture(String url, String type, Boolean featured, Station station) {
     this.url = url;
     this.type = type;
     this.featured = featured;
