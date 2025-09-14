@@ -12,16 +12,22 @@ import jakarta.persistence.Enumerated;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
+import jakarta.persistence.Index;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.OneToOne;
 import jakarta.persistence.Table;
+import jakarta.validation.constraints.NotNull;
 import java.time.Instant;
 import java.util.Objects;
 import java.util.UUID;
 
 @Entity
-@Table(name = "bookings")
+@Table(name = "bookings", indexes = {
+    @Index(name = "index_booking_station", columnList = "station_id"),
+    @Index(name = "index_booking_customer", columnList = "customer_id"),
+    @Index(name = "index_booking_status", columnList = "status"),
+})
 public class Booking extends AuditedEntity {
 
   @Id
@@ -29,14 +35,17 @@ public class Booking extends AuditedEntity {
   @Column(name = "id", nullable = false, updatable = false)
   private UUID id;
 
+  @NotNull
   @Column(name = "start", nullable = false, updatable = false)
   private Instant start;
 
+  @NotNull
   @Column(name = "end", nullable = false, updatable = false)
   private Instant end;
 
+  @NotNull
   @Enumerated(EnumType.STRING)
-  @Column(name = "status", nullable = false)
+  @Column(name = "status", nullable = false, length = 20)
   private BookingStatus status;
 
   @ManyToOne(optional = false)
@@ -44,10 +53,10 @@ public class Booking extends AuditedEntity {
   private Station station;
 
   @ManyToOne(optional = false)
-  @JoinColumn(name = "customer_id")
+  @JoinColumn(name = "customer_id", nullable = false)
   private User customer;
 
-  @OneToOne(mappedBy = "booking", cascade = CascadeType.ALL)
+  @OneToOne(mappedBy = "booking", cascade = CascadeType.ALL, orphanRemoval = true)
   private Transaction transaction;
 
   /**
@@ -57,13 +66,11 @@ public class Booking extends AuditedEntity {
   }
 
   public Booking(
-      UUID id,
       Instant start,
       Instant end,
       Station station,
       User customer
   ) {
-    this.id = id;
     this.start = start;
     this.end = end;
     this.status = BookingStatus.PENDING;

@@ -1,8 +1,9 @@
 package fr.hb.mlang.electricitybusiness.modules.transaction;
 
 public enum TransactionStatus {
-  PENDING, // Default
-  SUCCESS,
+  REQUIRES_PAYMENT,
+  SUCCEEDED,
   FAILED,
-  WAITING // Waiting for booking approved
+  CANCELLED,
+  REFUNDED
 }
