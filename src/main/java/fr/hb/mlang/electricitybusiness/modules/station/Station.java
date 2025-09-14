@@ -4,16 +4,26 @@ import fr.hb.mlang.electricitybusiness.modules.booking.Booking;
 import fr.hb.mlang.electricitybusiness.modules.location.Location;
 import fr.hb.mlang.electricitybusiness.modules.stationpicture.StationPicture;
 import fr.hb.mlang.electricitybusiness.shared.jpa.AuditedEntity;
+import fr.hb.mlang.electricitybusiness.shared.utils.MoneyConverter;
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
+import jakarta.persistence.Convert;
 import jakarta.persistence.Entity;
+import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
+import jakarta.persistence.Index;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.OneToMany;
 import jakarta.persistence.Table;
+import jakarta.validation.constraints.DecimalMin;
+import jakarta.validation.constraints.Digits;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Positive;
+import jakarta.validation.constraints.Size;
 import java.math.BigDecimal;
 import java.util.HashSet;
 import java.util.Objects;
@@ -21,7 +31,10 @@ import java.util.Set;
 import java.util.UUID;
 
 @Entity
-@Table(name = "stations")
+@Table(name = "stations", indexes = {
+    @Index(name = "index_station_available", columnList = "is_available"),
+    @Index(name = "index_station_location_available", columnList = "location_id, is_available")
+})
 public class Station extends AuditedEntity {
 
   @Id
@@ -29,35 +42,45 @@ public class Station extends AuditedEntity {
   @Column(name = "id", nullable = false, updatable = false)
   private UUID id;
 
-  @Column(name = "label", nullable = false)
+  @NotBlank
+  @Size(max = 150)
+  @Column(name = "label", nullable = false, length = 150)
   private String label;
 
-  @Column(name = "description")
+  @Size(max = 512)
+  @Column(name = "description", length = 512)
   private String description;
 
+  @NotNull
+  @Positive
   @Column(name = "max_power", nullable = false)
   private Integer maxPower;
 
   @Column(name = "is_wall_mounted", nullable = false)
   private boolean wallMounted;
 
-  @Column(name = "price", nullable = false)
+  @NotNull
+  @DecimalMin(value = "0.00")
+  @Digits(integer = 3, fraction = 2)
+  @Convert(converter = MoneyConverter.class)
+  @Column(name = "price", nullable = false, precision = 5, scale = 2)
   private BigDecimal price;
 
   @Column(name = "is_available", nullable = false)
   private boolean available;
 
-  @Column(name = "additional_info")
+  @Size(max = 1024)
+  @Column(name = "additional_info", length = 1024)
   private String additionalInfo;
 
-  @ManyToOne(optional = false)
-  @JoinColumn(name = "location_id")
+  @ManyToOne(optional = false, fetch = FetchType.LAZY)
+  @JoinColumn(name = "location_id", nullable = false)
   private Location location;
 
   @OneToMany(mappedBy = "station", cascade = CascadeType.ALL, orphanRemoval = true)
   private Set<StationPicture> pictures;
 
-  @OneToMany(mappedBy = "station", cascade = CascadeType.ALL)
+  @OneToMany(mappedBy = "station", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
   private Set<Booking> bookings = new HashSet<>();
 
   /**
@@ -67,7 +90,6 @@ public class Station extends AuditedEntity {
   }
 
   public Station(
-      UUID id,
       String label,
       String description,
       Integer maxPower,
@@ -77,7 +99,6 @@ public class Station extends AuditedEntity {
       String additionalInfo,
       Location location
   ) {
-    this.id = id;
     this.label = label;
     this.description = description;
     this.maxPower = maxPower;

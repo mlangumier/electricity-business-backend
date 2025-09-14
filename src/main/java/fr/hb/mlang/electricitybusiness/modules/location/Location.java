@@ -6,21 +6,31 @@ import fr.hb.mlang.electricitybusiness.shared.jpa.AuditedEntity;
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
+import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
+import jakarta.persistence.Index;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.OneToMany;
 import jakarta.persistence.Table;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Size;
 import java.util.HashSet;
 import java.util.Objects;
 import java.util.Set;
 import java.util.UUID;
+import org.hibernate.annotations.JdbcTypeCode;
+import org.hibernate.type.SqlTypes;
 import org.springframework.data.geo.Point;
 
 @Entity
-@Table(name = "locations")
+@Table(name = "locations", indexes = {
+    @Index(name = "index_location_city", columnList = "city"),
+    @Index(name = "index_location_postal_code", columnList = "postal_code")
+})
 public class Location extends AuditedEntity {
 
   @Id
@@ -28,26 +38,35 @@ public class Location extends AuditedEntity {
   @Column(name = "id", nullable = false, updatable = false)
   private UUID id;
 
+  @NotBlank
+  @Size(max = 255)
   @Column(name = "address", nullable = false)
   private String address;
 
+  @Size(max = 255)
   @Column(name = "address_2")
   private String address2;
 
-  @Column(name = "city", nullable = false)
+  @NotBlank
+  @Size(max = 100)
+  @Column(name = "city", nullable = false, length = 100)
   private String city;
 
-  @Column(name = "postal_code", nullable = false)
+  @NotBlank
+  @Size(max = 5)
+  @Column(name = "postal_code", nullable = false, length = 5)
   private String postalCode;
 
-  @Column(name = "coordinates", nullable = false)
+  @NotNull
+  @JdbcTypeCode(SqlTypes.GEOMETRY)
+  @Column(name = "coordinates", nullable = false, columnDefinition = "POINT SRID 4326")
   private Point coordinates;
 
-  @ManyToOne(optional = false)
-  @JoinColumn(name = "user_id")
+  @ManyToOne(optional = false, fetch = FetchType.LAZY)
+  @JoinColumn(name = "user_id", nullable = false)
   private User user;
 
-  @OneToMany(mappedBy = "location", cascade = CascadeType.ALL)
+  @OneToMany(mappedBy = "location", cascade = CascadeType.ALL, orphanRemoval = true)
   private Set<Station> stations = new HashSet<>();
 
   /**
@@ -57,7 +76,6 @@ public class Location extends AuditedEntity {
   }
 
   public Location(
-      UUID id,
       String address,
       String address2,
       String city,
@@ -65,7 +83,6 @@ public class Location extends AuditedEntity {
       Point coordinates,
       User user
   ) {
-    this.id = id;
     this.address = address;
     this.address2 = address2;
     this.city = city;
