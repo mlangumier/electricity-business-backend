@@ -166,6 +166,7 @@ public class UserProfile extends AuditedEntity {
         ", homeAddress='" + homeAddress + '\'' +
         ", preferences='" + preferences + '\'' +
         ", avatar='" + avatar + '\'' +
+        super.toString() +
         '}';
   }
 }

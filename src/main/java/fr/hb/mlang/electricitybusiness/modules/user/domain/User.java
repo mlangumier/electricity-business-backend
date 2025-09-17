@@ -56,7 +56,7 @@ public class User extends AuditedEntity {
 
   @Enumerated(EnumType.STRING)
   @Column(name = "role", nullable = false, length = 32)
-  private Role role;
+  private Role role = Role.USER;
 
   @OneToOne(mappedBy = "user", cascade = CascadeType.ALL)
   private UserAuth auth;
@@ -82,14 +82,15 @@ public class User extends AuditedEntity {
   /**
    * Required by JPA
    */
-  public User() {
+  protected User() {
   }
 
-  public User(UUID id, String email, String phoneNumber, Role role) {
-    this.id = id;
+  /**
+   * Entity constructor
+   */
+  public User(String email, String phoneNumber) {
     this.email = email;
     this.phoneNumber = phoneNumber;
-    this.role = role;
   }
 
   public UUID getId() {
@@ -144,16 +145,8 @@ public class User extends AuditedEntity {
     return locations;
   }
 
-  public void setLocations(Set<Location> locations) {
-    this.locations = locations;
-  }
-
   public Set<Booking> getBookings() {
     return bookings;
-  }
-
-  public void setBookings(Set<Booking> bookings) {
-    this.bookings = bookings;
   }
 
   public EmailVerificationToken getEmailVerificationToken() {
@@ -176,9 +169,58 @@ public class User extends AuditedEntity {
     return refreshTokens;
   }
 
-  public void setRefreshTokens(Set<RefreshToken> refreshTokens) {
-    this.refreshTokens = refreshTokens;
+
+  //--- Helper methods
+
+  public void addLocation(Location location) {
+    if (location == null) {
+      return;
+    }
+    this.locations.add(location);
+    location.setUser(this);
   }
+
+  public void removeLocation(Location location) {
+    if (location == null) {
+      return;
+    }
+    this.locations.remove(location);
+    location.setUser(null);
+  }
+
+  public void addBooking(Booking booking) {
+    if (booking == null) {
+      return;
+    }
+    this.bookings.add(booking);
+    booking.setCustomer(this);
+  }
+
+  public void removeBooking(Booking booking) {
+    if (booking == null) {
+      return;
+    }
+    this.bookings.remove(booking);
+    booking.setCustomer(null);
+  }
+
+  public void addRefreshToken(RefreshToken refreshToken) {
+    if (refreshToken == null) {
+      return;
+    }
+    this.refreshTokens.add(refreshToken);
+    refreshToken.setUser(this);
+  }
+
+  public void removeRefreshToken(RefreshToken refreshToken) {
+    if (refreshToken == null) {
+      return;
+    }
+    this.refreshTokens.remove(refreshToken);
+    refreshToken.setUser(null);
+  }
+
+  //--- Overrides
 
   @Override
   public boolean equals(Object o) {
@@ -200,6 +242,7 @@ public class User extends AuditedEntity {
         ", email='" + email + '\'' +
         ", phoneNumber='" + phoneNumber + '\'' +
         ", role=" + role +
+        super.toString() +
         '}';
   }
 }

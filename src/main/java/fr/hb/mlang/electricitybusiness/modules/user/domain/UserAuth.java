@@ -59,13 +59,6 @@ public class UserAuth extends AuditedEntity {
     this.lastLogin = null;
   }
 
-  public UserAuth(User user, String passwordHash, boolean emailVerified, Instant lastLogin) {
-    this.user = user;
-    this.passwordHash = passwordHash;
-    this.emailVerified = emailVerified;
-    this.lastLogin = lastLogin;
-  }
-
   public UUID getId() {
     return id;
   }
@@ -126,6 +119,7 @@ public class UserAuth extends AuditedEntity {
         ", passwordHash='" + passwordHash + '\'' +
         ", verified=" + emailVerified +
         ", lastLogin=" + lastLogin +
+        super.toString() + 
         '}';
   }
 }

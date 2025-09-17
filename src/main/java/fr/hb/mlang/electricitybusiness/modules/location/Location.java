@@ -75,16 +75,11 @@ public class Location extends AuditedEntity {
   public Location() {
   }
 
-  public Location(
-      String address,
-      String address2,
-      String city,
-      String postalCode,
-      Point coordinates,
-      User user
-  ) {
+  /**
+   * Entity constructor
+   */
+  public Location(String address, String city, String postalCode, Point coordinates, User user) {
     this.address = address;
-    this.address2 = address2;
     this.city = city;
     this.postalCode = postalCode;
     this.coordinates = coordinates;
@@ -155,6 +150,22 @@ public class Location extends AuditedEntity {
     this.stations = stations;
   }
 
+  //--- Helper methods
+
+  public void addStation(Station station) {
+    if (station == null) return;
+    this.stations.add(station);
+    station.setLocation(this);
+  }
+
+  public void removeStation(Station station) {
+    if (station == null) return;
+    this.stations.remove(station);
+    station.setLocation(null);
+  }
+
+  //--- Overrides
+
   @Override
   public boolean equals(Object o) {
     if (!(o instanceof Location location)) {
@@ -177,6 +188,7 @@ public class Location extends AuditedEntity {
         ", city='" + city + '\'' +
         ", postalCode='" + postalCode + '\'' +
         ", coordinates=" + coordinates +
+        super.toString() +
         '}';
   }
 }

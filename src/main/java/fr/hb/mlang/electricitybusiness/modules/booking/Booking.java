@@ -46,7 +46,7 @@ public class Booking extends AuditedEntity {
   @NotNull
   @Enumerated(EnumType.STRING)
   @Column(name = "status", nullable = false, length = 20)
-  private BookingStatus status;
+  private BookingStatus status = BookingStatus.PENDING;
 
   @ManyToOne(optional = false)
   @JoinColumn(name = "station_id", nullable = false)
@@ -65,15 +65,9 @@ public class Booking extends AuditedEntity {
   public Booking() {
   }
 
-  public Booking(
-      Instant start,
-      Instant end,
-      Station station,
-      User customer
-  ) {
+  public Booking(Instant start, Instant end, Station station, User customer) {
     this.start = start;
     this.end = end;
-    this.status = BookingStatus.PENDING;
     this.station = station;
     this.customer = customer;
   }
@@ -154,6 +148,7 @@ public class Booking extends AuditedEntity {
         ", start=" + start +
         ", end=" + end +
         ", status=" + status +
+        super.toString() +
         '}';
   }
 }
