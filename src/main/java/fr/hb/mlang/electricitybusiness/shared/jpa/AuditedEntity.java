@@ -12,7 +12,8 @@ import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
 @MappedSuperclass
 @EntityListeners(AuditingEntityListener.class)
-@Access(AccessType.FIELD) // Prevents from exposing setters, JPA automatically writes the fields into the entities that extend this class
+@Access(AccessType.FIELD)
+// Prevents from exposing setters, JPA automatically writes the fields into the entities that extend this class
 public abstract class AuditedEntity {
 
   @CreatedDate
@@ -37,9 +38,7 @@ public abstract class AuditedEntity {
 
   @Override
   public String toString() {
-    return "AuditedEntity{" +
-        "createdAt=" + createdAt +
-        ", updatedAt=" + updatedAt +
-        '}';
+    return ", createdAt=" + createdAt +
+        ", updatedAt=" + updatedAt;
   }
 }

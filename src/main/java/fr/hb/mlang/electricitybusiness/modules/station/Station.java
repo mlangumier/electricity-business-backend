@@ -67,7 +67,7 @@ public class Station extends AuditedEntity {
   private BigDecimal price;
 
   @Column(name = "is_available", nullable = false)
-  private boolean available;
+  private boolean available = true;
 
   @Size(max = 1024)
   @Column(name = "additional_info", length = 1024)
@@ -78,7 +78,7 @@ public class Station extends AuditedEntity {
   private Location location;
 
   @OneToMany(mappedBy = "station", cascade = CascadeType.ALL, orphanRemoval = true)
-  private Set<StationPicture> pictures;
+  private Set<StationPicture> pictures = new HashSet<>();
 
   @OneToMany(mappedBy = "station", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
   private Set<Booking> bookings = new HashSet<>();
@@ -95,8 +95,6 @@ public class Station extends AuditedEntity {
       Integer maxPower,
       boolean wallMounted,
       BigDecimal price,
-      boolean available,
-      String additionalInfo,
       Location location
   ) {
     this.label = label;
@@ -104,8 +102,6 @@ public class Station extends AuditedEntity {
     this.maxPower = maxPower;
     this.wallMounted = wallMounted;
     this.price = price;
-    this.available = available;
-    this.additionalInfo = additionalInfo;
     this.location = location;
   }
 
@@ -197,6 +193,42 @@ public class Station extends AuditedEntity {
     this.bookings = bookings;
   }
 
+  //--- Helper methods
+
+  public void addPicture(StationPicture picture) {
+    if (picture == null) {
+      return;
+    }
+    this.pictures.add(picture);
+    picture.setStation(this);
+  }
+
+  public void removePicture(StationPicture picture) {
+    if (picture == null) {
+      return;
+    }
+    this.pictures.remove(picture);
+    picture.setStation(null);
+  }
+
+  public void addBooking(Booking booking) {
+    if (booking == null) {
+      return;
+    }
+    this.bookings.add(booking);
+    booking.setStation(this);
+  }
+
+  public void removeBooking(Booking booking) {
+    if (booking == null) {
+      return;
+    }
+    this.bookings.remove(booking);
+    booking.setStation(null);
+  }
+
+  //--- Overrides
+
   @Override
   public boolean equals(Object o) {
     if (!(o instanceof Station station)) {
@@ -221,6 +253,7 @@ public class Station extends AuditedEntity {
         ", price=" + price +
         ", available=" + available +
         ", additionalInfo='" + additionalInfo + '\'' +
+        super.toString() +
         '}';
   }
 }
