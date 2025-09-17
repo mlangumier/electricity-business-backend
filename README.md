@@ -23,7 +23,7 @@ With Intellij IDEA, environment variables can be set directly in the IDE:
 Note: profiles (`dev`, `prod`, etc.) are also set there and might need to be set up as well.
 
 ```yaml
-  # The following values are examples and not be used for live applications 
+  # The following values are examples and should not be used for live applications 
 
   # App
   APP_BASE_URL=http://localhost:8080
