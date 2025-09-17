@@ -39,7 +39,7 @@ public class StationPicture extends AuditedEntity {
   private String type;
 
   @Column(name = "is_featured", nullable = false)
-  private boolean featured;
+  private boolean featured = false;
 
   @ManyToOne(optional = false, fetch = FetchType.LAZY)
   @JoinColumn(name = "station_id", nullable = false)
@@ -51,10 +51,9 @@ public class StationPicture extends AuditedEntity {
   public StationPicture() {
   }
 
-  public StationPicture(String url, String type, Boolean featured, Station station) {
+  public StationPicture(String url, String type, Station station) {
     this.url = url;
     this.type = type;
-    this.featured = featured;
     this.station = station;
   }
 
@@ -118,6 +117,7 @@ public class StationPicture extends AuditedEntity {
         ", url='" + url + '\'' +
         ", type='" + type + '\'' +
         ", featured=" + featured +
+        super.toString() +
         '}';
   }
 }

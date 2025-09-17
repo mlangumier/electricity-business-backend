@@ -44,7 +44,7 @@ public class Transaction extends AuditedEntity {
   @NotNull
   @Enumerated(EnumType.STRING)
   @Column(name = "status", nullable = false, length = 30)
-  private TransactionStatus status;
+  private TransactionStatus status = TransactionStatus.REQUIRES_PAYMENT;
 
   @NotNull
   @DecimalMin(value = "0.00")
@@ -63,13 +63,8 @@ public class Transaction extends AuditedEntity {
   public Transaction() {
   }
 
-  public Transaction(
-      UUID externalReference,
-      BigDecimal amount,
-      Booking booking
-  ) {
+  public Transaction(UUID externalReference, BigDecimal amount, Booking booking) {
     this.externalReference = externalReference;
-    this.status = TransactionStatus.REQUIRES_PAYMENT;
     this.amount = amount;
     this.booking = booking;
   }
@@ -134,6 +129,7 @@ public class Transaction extends AuditedEntity {
         ", externalReference=" + externalReference +
         ", status=" + status +
         ", amount=" + amount +
+        super.toString() +
         '}';
   }
 }
