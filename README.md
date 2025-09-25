@@ -16,27 +16,28 @@ allowing for cancellation, and many more!
 ## Table of Content
 
 <!-- TOC -->
+
 * [ELECTRICITY BUSINESS - BACKEND](#electricity-business---backend)
-  * [Table of Content](#table-of-content)
-  * [Requirements](#requirements)
-    * [Tools & versions](#tools--versions)
-    * [Installation Steps](#installation-steps)
-  * [Project details](#project-details)
-    * [Dependencies](#dependencies)
-    * [Configurations](#configurations)
-    * [Environment variables](#environment-variables)
-      * [Using IntelliJ IDEA](#using-intellij-idea)
-      * [With local environment variables](#with-local-environment-variables)
-      * [Other methods](#other-methods)
-    * [Installation, run & build](#installation-run--build)
-      * [Other commands](#other-commands)
-  * [Deployment](#deployment)
-    * [Procedure](#procedure)
-    * [Verifications](#verifications)
-    * [Rollback plan](#rollback-plan)
-  * [Links](#links)
-  * [Other information](#other-information)
-    * [UML Class Diagram](#uml-class-diagram)
+    * [Table of Content](#table-of-content)
+    * [Requirements](#requirements)
+        * [Tools & versions](#tools--versions)
+        * [Installation Steps](#installation-steps)
+            * [Java, SDK](#java-sdk)
+            * [MySQL (for production)](#mysql-for-production)
+            * [Git](#git)
+            * [Docker desktop (development only)](#docker-desktop-development-only)
+    * [Project details](#project-details)
+        * [Dependencies](#dependencies)
+        * [Configurations](#configurations)
+        * [Environment variables](#environment-variables)
+            * [Using IntelliJ IDEA](#using-intellij-idea)
+            * [With local environment variables](#with-local-environment-variables)
+            * [Other methods](#other-methods)
+        * [Installation, run & build](#installation-run--build)
+            * [Other commands](#other-commands)
+    * [Deployment](#deployment)
+        * [Procedure](#procedure)
+
 <!-- TOC -->
 
 ---
@@ -47,28 +48,127 @@ This guide covers the information required to run, build & deploy this REST API 
 
 ### Tools & versions
 
-| Tool             | Version      |
-|:-----------------|--------------|
-| OS               | Ubuntu 24.04 |
-| npm              | 11.6         |
-| Node             | 22.19        |
-| SDK              | openjdk-24.0 |
-| MySQL (optional) | 8.4          |
-| Git              | 2.49         |
-| Docker Desktop   | 4.46         |
+| Tool           | Version      |
+|----------------|--------------|
+| OS             | Ubuntu 24.04 |
+| Java/SDK       | temurin-21   |
+| MySQL (prod)   | 8.4          |
+| Git            | 2.49         |
+| Docker Desktop | 4.46         |
 
 ### Installation Steps
 
-[//]: # (TODO: Replace the links with the specific steps to follow)
+#### Java, SDK
 
-- [Npm & Node](https://docs.npmjs.com/downloading-and-installing-node-js-and-npm)
-- [Java/SDK](https://docs.oracle.com/en/java/javase/23/install/overview-jdk-installation.html)
-- [MySQL](https://ostechnix.com/how-to-install-mysql-in-ubuntu-linux/) [^1]
-- [Git](https://git-scm.com/book/en/v2/Getting-Started-Installing-Git)
-- [Docker Desktop](https://docs.docker.com/desktop/setup/install/linux/ubuntu/)
+[Install and manage versions of Java & JDK](https://www.digitalocean.com/community/tutorials/how-to-install-java-with-apt-on-ubuntu-22-04)
 
-[^1]: Since we'll be using a MySQL server container in Docker, we don't need to install a MySQL
-server locally.
+```shell
+# Install JDK (contains JRE)
+sudo apt install default-jdk
+
+# Check version
+java -version
+javac -version
+
+# Set environment variable
+
+# Install Maven
+sudo apt install maven
+
+# Check version (if doesn't work, follow the guide to set the environment variables)
+mvn -v
+```
+
+#### MySQL (for production)
+
+[Install & Configure a MySQL server](https://ostechnix.com/how-to-install-mysql-in-ubuntu-linux/)
+
+Since we'll be using a MySQL server on a Docker container for development, we don't need to install
+a MySQL server locally in order to work on this project.  
+For production (and in case of problem during development), here's the installation guide for a
+MySQL server.
+
+```shell
+# Install MySQL server
+sudo apt install mysql-server
+
+# Check MySQL version
+mysql --version
+
+# Start server
+sudo systemctl start mysql
+
+# Stop server
+sudo systemctl stop mysql
+
+# Check server status
+sudo systemctl status mysql
+
+# Enable server auto-start on boot (use "disable" command instead to disable auto-start on boot)
+sudo systemctl enable mysql
+
+# Setup the mysql server (useful for production especially)
+sudo mysql_secure_installation
+```
+
+#### Git
+
+[Install Git](https://git-scm.com/book/en/v2/Getting-Started-Installing-Git)
+
+```shell
+# Install git
+sudo apt install git
+
+# Check version
+git --version
+```
+
+#### Docker (development only)
+
+Here are two options:
+
+- Docker Desktop: comes with a user interface, but heavier on the machine.
+- Docker Engine: same functionalities, but lighter since it only requires using the CLI.
+
+**Option 1: Docker Desktop**
+
+[Install on Ubuntu Docker Desktop](https://docs.docker.com/desktop/setup/install/linux/ubuntu/)
+
+Download the package [
+*docker-desktop-amd64.deb*](https://desktop.docker.com/linux/main/amd64/docker-desktop-amd64.deb?utm_source=docker&utm_medium=webreferral&utm_campaign=docs-driven-download-linux-amd64)
+or use the previous link for the latest version. Then follow these commands :
+
+```shell
+# Install the previously downloaded package (use the path to your downloaded package) (installs in: `/opt/docker-desktop`)
+sudo apt-get install ./docker-desktop.amd64.deb
+```
+
+**Option 2: Docker Engine**
+
+```shell
+# Install Docker Engine
+sudo apt install docker.io
+
+# Check version
+docker --version
+```
+
+**Commands**
+
+Depending on which option you choose, Docker can then be used as a desktop application, or with the
+following set of commands (similar to
+MySQL server commands)
+
+```shell
+# Start Docker desktop
+systemctl --user start docker-desktop
+
+# Enable auto-start (disable with "disable" command)
+systemctl --user enable docker-desktop
+
+# Stop Docker desktop
+systemctl --user stop docker-desktop
+```
 
 ## Project details
 
@@ -76,9 +176,9 @@ server locally.
 
 | GroupId         | Dependency              | Version | Type              |
 |-----------------|-------------------------|:-------:|-------------------| 
-| springframework | Spring Boot             |  3.5.5  | Framework         | (default)
-| springframework | Spring Web              |  3.5.5  | Web server        |
-| springframework | Spring Validation       |  3.5.5  | ORM               |
+| springframework | Spring Boot             |  3.5.5  | Framework         |
+| springframework | Spring Web              |  3.5.5  | Framework/REST    |
+| springframework | Spring Validation       |  3.5.5  | Dev/Validation    |
 | springframework | Spring Data JPA         |  3.5.5  | ORM/Database      |
 | mysql           | MySQL Connector         |  9.4.0  | Database          |
 | springframework | Spring Security         |  3.5.5  | Authentication    |
@@ -91,7 +191,7 @@ server locally.
 | springframework | Spring Security Test    |  3.5.5  | Tests             |
 | springframework | Spring DevTools         |  3.5.5  | Development       |
 | springframework | Spring Config Processor |  3.5.5  | Development       |
-| springframework | Docker Compose          |  3.5.5  | Dev/Database      |
+| springframework | Docker Compose (dev)    |  3.5.5  | Dev/Database      | (development only)
 | springframework | Spring Actuator         |  3.5.5  | Dev/Monitoring    |
 | springdoc       | OpenAPI WebMVC UI       |  2.1.0  | Dev/Documentation |
 
@@ -100,9 +200,10 @@ server locally.
 - **Compiler**: this project uses `Maven` to manage, build and deploy the application. The list of
   commands to start working with the app can be found in the
   section [Installation, run & build](#installation-run--build).
-- **Database**: because we're using the `docker-compose` dependency, SpringBoot will read the
+- **Database (dev only)**: because we're using the `docker-compose` dependency, SpringBoot will read
+  the
   `compose.yaml` file when you run the application and automatically start a `MySQL` server on a
-  `Docker` container (you must have Docker Desktop open in order to start the application).
+  `Docker container` (you must have Docker Desktop open in order to start the application).
 
 ### Environment variables
 
@@ -125,8 +226,8 @@ Note: profiles (`dev`, `prod`, etc.) are also set there and might need to be set
 ```yaml
   # The following values are examples and not be used for live applications 
 
-  # App
-  APP_BASE_URL=http://localhost:8080
+  # App 
+  APP_BASE_URL=http://localhost:8080  # Value for local development
 
   # Database
   MYSQL_DATABASE=db_electricity_business
@@ -140,7 +241,7 @@ Note: profiles (`dev`, `prod`, etc.) are also set there and might need to be set
   MAIL_USERNAME=<mail-hosting-service-username>
   MAIL_PASSWORD=<app-mail-password>
 
-  # JWT
+  # JWT (with readable duration, since Spring Boot 3.5+)
   JWT_ISSUER=<jwt-issuer-token>
   JWT_ACCESS=5m
   JWT_REFRESH=7d
@@ -204,14 +305,14 @@ mvn compile
 # Start the implemented tests
 mvn test
 
+# Start integration tests
+mvn verify
+
 # Set a new version before release
 mvn versions:set -DnewVersion=1.0.1
 
-# Cleans the build folder, tests & builds a new executable JAR file in "target/electricity-business-<version>.jar"
+# Cleans the build folder, tests & builds a new executable JAR -> can found in "target/electricity-business-<version>.jar"
 mvn clean package
-
-# Install the JAR file into a local repository
-mvn install
 ```
 
 **Docker**  
@@ -225,9 +326,6 @@ docker compose up
 # Start the container in detached mode (don't display the logs, keep access to the shell)
 docker compose up -d
 
-# List all the running containers
-docker ps
-
 # Stops the container
 docker compose stop
 
@@ -236,17 +334,50 @@ docker compose down
 
 # Stops and closes the container, and removes the image (clean slate)
 docker compose down -v
+
+# List all the running containers
+docker ps
+
+# Shows logs for the container
+docker logs electricity-business-mysql
 ```
 
 ---
 
-[//]: # (## Deployment)
 [//]: # (TODO: think about & prepare deployment setup & procedures)
 
-[//]: # (### Procedure)
+## Deployment
+
+### Procedure
+
+An example of a deployment script can be found in `./scripts/deploy.sh`.  
+It allows us to deploy the application using the command below, automatically triggering the
+following steps:
+
+- Pull the changes from the repository (default branch: `main`)
+- Install dependencies & compile code
+- Run unit tests
+- Package & run the application
+
+> For now, the script must be run manually. It will be automated with the implementation of other
+> tools later on.
+
+Run the script with the following command:
+
+```shell
+# (optional) If you see the error: "Permission denied", use this command:
+chmod +x ./scripts/deploy.sh
+
+# Run the script with default values
+./scripts/deploy.sh
+
+# Run the script with some custom values (REPO_URL, APP_DIR, BRANCH, PROFILE)
+APP_DIR=../test-deployment PROFILE=dev ./scripts/deploy.sh
+```
+
 [//]: # (how & where to deploy)
 
-[//]: # (### Verifications)
+[//]: # (### Post-deploy verifications)
 [//]: # (metrics & logs)
 
 [//]: # (### Rollback plan)
@@ -258,5 +389,4 @@ docker compose down -v
 [//]: # (## Other information)
 
 [//]: # (### UML Class Diagram)
-
 [//]: # (TODO: Add class diagram)
