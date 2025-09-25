@@ -16,28 +16,27 @@ allowing for cancellation, and many more!
 ## Table of Content
 
 <!-- TOC -->
-
 * [ELECTRICITY BUSINESS - BACKEND](#electricity-business---backend)
-    * [Table of Content](#table-of-content)
-    * [Requirements](#requirements)
-        * [Tools & versions](#tools--versions)
-        * [Installation Steps](#installation-steps)
-            * [Java, SDK](#java-sdk)
-            * [MySQL (for production)](#mysql-for-production)
-            * [Git](#git)
-            * [Docker desktop (development only)](#docker-desktop-development-only)
-    * [Project details](#project-details)
-        * [Dependencies](#dependencies)
-        * [Configurations](#configurations)
-        * [Environment variables](#environment-variables)
-            * [Using IntelliJ IDEA](#using-intellij-idea)
-            * [With local environment variables](#with-local-environment-variables)
-            * [Other methods](#other-methods)
-        * [Installation, run & build](#installation-run--build)
-            * [Other commands](#other-commands)
-    * [Deployment](#deployment)
-        * [Procedure](#procedure)
-
+  * [Table of Content](#table-of-content)
+  * [Requirements](#requirements)
+    * [Tools & versions](#tools--versions)
+    * [Installation Steps](#installation-steps)
+      * [Java, SDK](#java-sdk)
+      * [MySQL (for production)](#mysql-for-production)
+      * [Git](#git)
+      * [Docker (development only)](#docker-development-only)
+  * [Project details](#project-details)
+    * [Dependencies](#dependencies)
+    * [Configurations](#configurations)
+    * [Environment variables](#environment-variables)
+      * [Using IntelliJ IDEA](#using-intellij-idea)
+      * [With local environment variables](#with-local-environment-variables)
+      * [Other methods](#other-methods)
+    * [Installation, run & build](#installation-run--build)
+      * [Other commands](#other-commands)
+  * [Deployment](#deployment)
+    * [Procedure](#procedure)
+    * [Rollback](#rollback)
 <!-- TOC -->
 
 ---
@@ -344,20 +343,19 @@ docker logs electricity-business-mysql
 
 ---
 
-[//]: # (TODO: think about & prepare deployment setup & procedures)
-
 ## Deployment
 
 ### Procedure
 
-An example of a deployment script can be found in `./scripts/deploy.sh`.  
+The deployment script we'll be using can be found in `./scripts/deploy.sh`.  
 It allows us to deploy the application using the command below, automatically triggering the
 following steps:
 
 - Pull the changes from the repository (default branch: `main`)
-- Install dependencies & compile code
-- Run unit tests
-- Package & run the application
+- Install dependencies & run unit tests
+- Packages the application into a new artifact
+- Managing this & previous artifacts in `/releases` (for rollbacks)
+- Start the application with the new `.jar`
 
 > For now, the script must be run manually. It will be automated with the implementation of other
 > tools later on.
@@ -374,14 +372,18 @@ chmod +x ./scripts/deploy.sh
 # Run the script with some custom values (REPO_URL, APP_DIR, BRANCH, PROFILE)
 APP_DIR=../test-deployment PROFILE=dev ./scripts/deploy.sh
 ```
+### Rollback
 
-[//]: # (how & where to deploy)
+The rollback script can be found in `./scripts/rollback.sh`. Its purpose is to quickly deploy the previous version of the application if an error occurs with the new one.   
+Since the deployment script names the new artifact `current.jar` and the previous one `previous.jar`, this rollback script simply swaps them and runs the previous deployment.  
+
+Run the script with the following command:
+```shell
+./scripts/rollback.sh
+```
 
 [//]: # (### Post-deploy verifications)
 [//]: # (metrics & logs)
-
-[//]: # (### Rollback plan)
-[//]: # (how is the rollback managed & to what version/build)
 
 [//]: # (## Links)
 [//]: # (repositories, host dashboards)
