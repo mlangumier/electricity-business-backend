@@ -30,12 +30,12 @@ git pull --ff-only
 
 # Install dependencies & automatically run tests
 echo "[STEP-3] Installing dependencies & running tests..."
-./mvnw -B test
+mvn -B test
 echo "Tests passed."
 
 # Package the application
 echo "[STEP-4] Packaging artifact (skip tests)..."
-./mvnw -B -DskipTests package
+mvn -B -DskipTests package
 
 # Store new JAR file in /releases folder and names it after timestamp
 echo "[STEP-5] "
