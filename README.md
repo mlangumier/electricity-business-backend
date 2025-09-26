@@ -16,27 +16,29 @@ allowing for cancellation, and many more!
 ## Table of Content
 
 <!-- TOC -->
+
 * [ELECTRICITY BUSINESS - BACKEND](#electricity-business---backend)
-  * [Table of Content](#table-of-content)
-  * [Requirements](#requirements)
-    * [Tools & versions](#tools--versions)
-    * [Installation Steps](#installation-steps)
-      * [Java, SDK](#java-sdk)
-      * [MySQL (for production)](#mysql-for-production)
-      * [Git](#git)
-      * [Docker (development only)](#docker-development-only)
-  * [Project details](#project-details)
-    * [Dependencies](#dependencies)
-    * [Configurations](#configurations)
-    * [Environment variables](#environment-variables)
-      * [Using IntelliJ IDEA](#using-intellij-idea)
-      * [With local environment variables](#with-local-environment-variables)
-      * [Other methods](#other-methods)
-    * [Installation, run & build](#installation-run--build)
-      * [Other commands](#other-commands)
-  * [Deployment](#deployment)
-    * [Procedure](#procedure)
-    * [Rollback](#rollback)
+    * [Table of Content](#table-of-content)
+    * [Requirements](#requirements)
+        * [Tools & versions](#tools--versions)
+        * [Installation Steps](#installation-steps)
+            * [Java, SDK](#java-sdk)
+            * [MySQL (for production)](#mysql-for-production)
+            * [Git](#git)
+            * [Docker (development only)](#docker-development-only)
+    * [Project details](#project-details)
+        * [Dependencies](#dependencies)
+        * [Configurations](#configurations)
+        * [Environment variables](#environment-variables)
+            * [Using IntelliJ IDEA](#using-intellij-idea)
+            * [With local environment variables](#with-local-environment-variables)
+            * [Other methods](#other-methods)
+        * [Installation, run & build](#installation-run--build)
+            * [Other commands](#other-commands)
+    * [Deployment](#deployment)
+        * [Procedure](#procedure)
+        * [Rollback](#rollback)
+
 <!-- TOC -->
 
 ---
@@ -229,6 +231,7 @@ Note: profiles (`dev`, `prod`, etc.) are also set there and might need to be set
   APP_BASE_URL=http://localhost:8080  # Value for local development
 
   # Database
+  DATABASE_URL=localhost:3306
   MYSQL_DATABASE=db_electricity_business
   MYSQL_USER=dev
   MYSQL_PASSWORD=password
@@ -372,23 +375,68 @@ chmod +x ./scripts/deploy.sh
 # Run the script with some custom values (REPO_URL, APP_DIR, BRANCH, PROFILE)
 APP_DIR=../test-deployment PROFILE=dev ./scripts/deploy.sh
 ```
+
+> Note: right now, the script has an issue where it runs maven with Java 24 instead of Java 21 as
+> set in the project. This needs to be solved before we can run the script without problem. See the
+> snippet below for the exact error message.  
+> Info: after testing & checks, the command `./mvnw -B test` runs properly within the project, but
+> not from the script.  
+> - Project: the maven compiler (./mvnw) is explicitly set to version 21  
+> - Local environment: maven (mvn), java & javac are all set to version 21  
+
+```shell
+[STEP-3] Installing dependencies & running tests...
+[INFO] Scanning for projects...
+[INFO] 
+[INFO] ------------------< fr.hb.mlang:electricity-business >------------------
+[INFO] Building Electricity Business REST API 0.0.1-SNAPSHOT
+[INFO] --------------------------------[ jar ]---------------------------------
+[INFO] 
+[INFO] --- maven-resources-plugin:3.3.1:resources (default-resources) @ electricity-business ---
+[INFO] Copying 3 resources from src/main/resources to target/classes
+[INFO] Copying 0 resource from src/main/resources to target/classes
+[INFO] 
+[INFO] --- maven-compiler-plugin:3.14.0:compile (default-compile) @ electricity-business ---
+[INFO] Recompiling the module because of changed source code.
+[INFO] Compiling 1 source file with javac [debug parameters release 24] to target/classes
+[INFO] ------------------------------------------------------------------------
+[INFO] BUILD FAILURE
+[INFO] ------------------------------------------------------------------------
+[INFO] Total time:  1.400 s
+[INFO] Finished at: 2025-09-26T14:10:35+02:00
+[INFO] ------------------------------------------------------------------------
+[ERROR] Failed to execute goal org.apache.maven.plugins:maven-compiler-plugin:3.14.0:compile (default-compile) on project electricity-business: Fatal error compiling: error: release version 24 not supported -> [Help 1]
+[ERROR] 
+[ERROR] To see the full stack trace of the errors, re-run Maven with the -e switch.
+[ERROR] Re-run Maven using the -X switch to enable full debug logging.
+[ERROR] 
+[ERROR] For more information about the errors and possible solutions, please read the following articles:
+[ERROR] [Help 1] http://cwiki.apache.org/confluence/display/MAVEN/MojoExecutionException
+```
+
 ### Rollback
 
-The rollback script can be found in `./scripts/rollback.sh`. Its purpose is to quickly deploy the previous version of the application if an error occurs with the new one.   
-Since the deployment script names the new artifact `current.jar` and the previous one `previous.jar`, this rollback script simply swaps them and runs the previous deployment.  
+The rollback script can be found in `./scripts/rollback.sh`. Its purpose is to quickly deploy the
+previous version of the application if an error occurs with the new one.   
+Since the deployment script names the new artifact `current.jar` and the previous one
+`previous.jar`, this rollback script simply swaps them and runs the previous deployment.
 
 Run the script with the following command:
+
 ```shell
 ./scripts/rollback.sh
 ```
 
 [//]: # (### Post-deploy verifications)
+
 [//]: # (metrics & logs)
 
 [//]: # (## Links)
+
 [//]: # (repositories, host dashboards)
 
 [//]: # (## Other information)
 
 [//]: # (### UML Class Diagram)
+
 [//]: # (TODO: Add class diagram)
