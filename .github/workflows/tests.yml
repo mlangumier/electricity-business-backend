@@ -1,0 +1,23 @@
+name: (Test) Electricity Business Backend
+run-name: ${{ github.actor }} is testing out GitHub Actions!
+
+on: [ push ]
+
+jobs:
+  Explore-GitHub-Actions:
+    runs-on: ubuntu-latest
+    steps:
+      - run: echo "Event triggered by a ${{ github.event_name }} event on branch ${{ github.ref }} (${{ github.repository }}); running on a ${{ runner.os }} server."
+
+      - name: Check out repository code
+        uses: actions/checkout@v5
+
+      - run: echo "The ${{ github.repository }} has been cloned to the runner."
+
+      - run: echo "Workflow now ready to test the code."
+
+      - name: List files in the repository
+        run: |
+          ls ${{ github.workspace }}
+
+      - run: echo "Job status is ${{ job.status }}"
