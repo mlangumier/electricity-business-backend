@@ -28,17 +28,21 @@ echo "[STEP-2] Switching to branch '$BRANCH' and pulling latest changes..."
 git switch "$BRANCH"
 git pull --ff-only
 
-# Install dependencies & automatically run tests
-echo "[STEP-3] Installing dependencies & running tests..."
+# Install dependencies
+echo "[STEP-3] Installing dependencies..."
+mvn -B clean install -DskipTests
+
+# Run tests
+echo "[STEP-4] Running tests..."
 mvn -B test
 echo "Tests passed."
 
 # Package the application
-echo "[STEP-4] Packaging artifact (skip tests)..."
-mvn -B -DskipTests package
+echo "[STEP-5] Packaging artifact (skip tests)..."
+mvn -B package -DskipTests
 
 # Store new JAR file in /releases folder and names it after timestamp
-echo "[STEP-5] "
+echo "[STEP-6] "
 mkdir -p releases
 NEW_JAR="$(ls -1 target/*.jar | head -n1)"
 STAMP="$(date+%Y%m%d-%H%M%S)"
@@ -52,6 +56,6 @@ fi
 ln -sfn "releases/app-$STAMP.jar" releases/current.jar
 
 # Run the application
-echo "[STEP-6] Starting: java -jar \"releases/current.jar\" --spring.profiles.active=$PROFILE"
+echo "[STEP-7] Starting: java -jar \"releases/current.jar\" --spring.profiles.active=$PROFILE"
 echo "Press Ctrl+C to stop the application."
 exec java -jar releases/current.jar --spring-profiles.active="$PROFILE"
