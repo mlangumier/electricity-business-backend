@@ -1,0 +1,48 @@
+name: Build and deploy EB-backend
+
+# https://github.com/OswaldAKs/CICD-Pipeline-with-GithubActions-Docker
+
+on:
+  pull_request:
+    branches:
+      - main
+      - development
+
+jobs:
+  # Test for our current setup
+  Test-Application:
+    runs-on: ubuntu-22.04
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v5
+
+      - name: Setup JDK 21
+        uses: actions/setup-java@v5
+        with:
+          distribution: 'oracle'
+          java-version: '21'
+          check-latest: 'true'
+          cache: 'maven'
+
+      - name: Unit tests
+        run: mvn -B test --file pom.xml
+
+  # Testing alternative Ubuntu & Java versions
+  Test-Different-Versions:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        java: [ '11', '17', '21', '24' ]
+    name: Java ${{ matrix.java }} sample
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v5
+
+      - name: Setup Java
+        uses: actions/setup-java@v5
+        with:
+          distribution: '<distribution>'
+          java-version: ${{ matrix.java }}
+
+      - name: Unit tests
+        run: mvn -B test --file pom.xml
