@@ -37,6 +37,8 @@ allowing for cancellation, and many more!
   * [Deployment](#deployment)
     * [Procedure](#procedure)
     * [Rollback](#rollback)
+  * [Other information](#other-information)
+    * [UML Class Diagram](#uml-class-diagram)
 <!-- TOC -->
 
 ---
@@ -223,7 +225,7 @@ With Intellij IDEA, environment variables can be set directly in the IDE:
 Note: profiles (`dev`, `prod`, etc.) are also set there and might need to be set up as well.
 
 ```yaml
-  # The following values are examples and not be used for live applications 
+  # The following values are examples and should not be used for live applications 
 
   # App 
   APP_BASE_URL=http://localhost:8080  # Value for local development
@@ -378,9 +380,9 @@ APP_DIR=../test-deployment PROFILE=dev ./scripts/deploy.sh
 > set in the project. This needs to be solved before we can run the script without problem. See the
 > snippet below for the exact error message.  
 > Info: after testing & checks, the command `./mvnw -B test` runs properly within the project, but
-> not from the script.  
-> - Project: the maven compiler (./mvnw) is explicitly set to version 21  
-> - Local environment: maven (mvn), java & javac are all set to version 21  
+> not from the script.
+> - Project: the maven compiler (./mvnw) is explicitly set to version 21
+> - Local environment: maven (mvn), java & javac are all set to version 21
 
 ```shell
 [STEP-3] Installing dependencies & running tests...
@@ -433,8 +435,16 @@ Run the script with the following command:
 
 [//]: # (repositories, host dashboards)
 
-[//]: # (## Other information)
+## Other information
 
-[//]: # (### UML Class Diagram)
+### UML Class Diagram
 
-[//]: # (TODO: Add class diagram)
+Spécificities :
+
+- Most entities will extend `AuditedEntity` in order to keep track of commonly logged fields such as
+  `createdAt` or `updatedAt`.
+- In our code, `User` will be separated into two entities: `User` and `UserAuth`, and
+  `SecurityUserDetailsService` will implement `UserDetails` and have both entities as fields. That
+  way, we keep both purposes of the entity separate while still being able to use them together.
+
+![Class Diagram](/assets/class_diagram.png)
