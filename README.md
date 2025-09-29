@@ -380,9 +380,9 @@ APP_DIR=../test-deployment PROFILE=dev ./scripts/deploy.sh
 > set in the project. This needs to be solved before we can run the script without problem. See the
 > snippet below for the exact error message.  
 > Info: after testing & checks, the command `./mvnw -B test` runs properly within the project, but
-> not from the script.  
-> - Project: the maven compiler (./mvnw) is explicitly set to version 21  
-> - Local environment: maven (mvn), java & javac are all set to version 21  
+> not from the script.
+> - Project: the maven compiler (./mvnw) is explicitly set to version 21
+> - Local environment: maven (mvn), java & javac are all set to version 21
 
 ```shell
 [STEP-3] Installing dependencies & running tests...
@@ -439,4 +439,12 @@ Run the script with the following command:
 
 ### UML Class Diagram
 
-![Class Diagram](./assets/class_diagram.png)
+Spécificities :
+
+- Most entities will extend `AuditedEntity` in order to keep track of commonly logged fields such as
+  `createdAt` or `updatedAt`.
+- In our code, `User` will be separated into two entities: `User` and `UserAuth`, and
+  `SecurityUserDetailsService` will implement `UserDetails` and have both entities as fields. That
+  way, we keep both purposes of the entity separate while still being able to use them together.
+
+![Class Diagram](/assets/class_diagram.png)

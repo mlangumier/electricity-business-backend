@@ -12,12 +12,12 @@ import org.springframework.security.core.userdetails.UserDetails;
  * Transient adapter that implements {@link UserDetails} and wraps both {@link User} and
  * {@link UserAuth}, exposing their fields while keeping them separate (entity vs authentication).
  */
-public final class SecurityUser implements UserDetails {
+public final class SecurityUserDetailsService implements UserDetails {
 
   private final User user;
   private final UserAuth auth;
 
-  public SecurityUser(User user, UserAuth userAuth) {
+  public SecurityUserDetailsService(User user, UserAuth userAuth) {
     this.user = user;
     this.auth = userAuth;
   }
