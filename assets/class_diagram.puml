@@ -20,6 +20,11 @@ enum PaymentStatus {
     WAITING
 }
 
+abstract class AuditedEntity {
+  createdAt: Instant
+  updatedAt: Instant
+}
+
 class User {
     id: UUID
     email: String
