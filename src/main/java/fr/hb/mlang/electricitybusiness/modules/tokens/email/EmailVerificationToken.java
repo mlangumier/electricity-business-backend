@@ -29,6 +29,7 @@ import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 public class EmailVerificationToken {
 
   @Id
+  @Column(name = "user_id")
   private UUID id;
 
   @MapsId
@@ -60,8 +61,7 @@ public class EmailVerificationToken {
   /**
    * Creates a token to verify the user's email. PK inherited from the user (see {@link MapsId}).
    */
-  public EmailVerificationToken(User user, String tokenHash, Instant expiresAt) {
-    this.user = user;
+  public EmailVerificationToken(String tokenHash, Instant expiresAt) {
     this.tokenHash = tokenHash;
     this.expiresAt = expiresAt;
   }

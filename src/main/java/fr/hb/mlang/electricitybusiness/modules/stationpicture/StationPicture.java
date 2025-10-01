@@ -51,10 +51,9 @@ public class StationPicture extends AuditedEntity {
   public StationPicture() {
   }
 
-  public StationPicture(String url, String type, Station station) {
+  public StationPicture(String url, String type) {
     this.url = url;
     this.type = type;
-    this.station = station;
   }
 
   public UUID getId() {
