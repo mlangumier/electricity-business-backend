@@ -53,7 +53,8 @@ class Location {
     address2: String
     city: String
     postalCode: String
-    coordinates: Point
+    latitude: BigDecimal
+    longitude: BigDecimal
     otherInformation: String
 }
 

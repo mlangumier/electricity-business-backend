@@ -68,32 +68,21 @@ public class RefreshToken {
   /**
    * Minimal constructor
    */
-  public RefreshToken(String tokenHash, Instant expiresAt, User user) {
+  public RefreshToken(String tokenHash, Instant expiresAt) {
     this.tokenHash = tokenHash;
     this.expiresAt = expiresAt;
-    this.user = user;
   }
 
   /**
    * Full constructor
    */
-  public RefreshToken(
-      UUID id,
-      String tokenHash,
-      Instant createdAt,
-      Instant expiresAt,
-      String deviceInfo,
-      boolean revoked,
-      User user
-  ) {
-    this.id = id;
-    this.tokenHash = tokenHash;
-    this.createdAt = createdAt;
-    this.expiresAt = expiresAt;
+  public RefreshToken(String tokenHash, Instant expiresAt, String deviceInfo) {
+    this(tokenHash, expiresAt);
     this.deviceInfo = deviceInfo;
-    this.revoked = revoked;
-    this.user = user;
+    this.revoked = false;
   }
+
+
 
   public UUID getId() {
     return id;

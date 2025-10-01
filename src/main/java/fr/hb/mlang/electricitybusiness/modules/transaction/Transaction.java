@@ -63,10 +63,9 @@ public class Transaction extends AuditedEntity {
   public Transaction() {
   }
 
-  public Transaction(UUID externalReference, BigDecimal amount, Booking booking) {
+  public Transaction(UUID externalReference, BigDecimal amount) {
     this.externalReference = externalReference;
     this.amount = amount;
-    this.booking = booking;
   }
 
   public UUID getId() {
