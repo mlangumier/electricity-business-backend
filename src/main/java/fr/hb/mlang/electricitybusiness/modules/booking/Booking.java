@@ -65,11 +65,9 @@ public class Booking extends AuditedEntity {
   public Booking() {
   }
 
-  public Booking(Instant start, Instant end, Station station, User customer) {
+  public Booking(Instant start, Instant end) {
     this.start = start;
     this.end = end;
-    this.station = station;
-    this.customer = customer;
   }
 
   public UUID getId() {

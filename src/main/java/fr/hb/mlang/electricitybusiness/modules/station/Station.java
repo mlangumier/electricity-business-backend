@@ -1,7 +1,7 @@
 package fr.hb.mlang.electricitybusiness.modules.station;
 
 import fr.hb.mlang.electricitybusiness.modules.booking.Booking;
-import fr.hb.mlang.electricitybusiness.modules.location.Location;
+import fr.hb.mlang.electricitybusiness.modules.location.domain.Location;
 import fr.hb.mlang.electricitybusiness.modules.stationpicture.StationPicture;
 import fr.hb.mlang.electricitybusiness.shared.jpa.AuditedEntity;
 import fr.hb.mlang.electricitybusiness.shared.utils.MoneyConverter;
@@ -94,15 +94,13 @@ public class Station extends AuditedEntity {
       String description,
       Integer maxPower,
       boolean wallMounted,
-      BigDecimal price,
-      Location location
+      BigDecimal price
   ) {
     this.label = label;
     this.description = description;
     this.maxPower = maxPower;
     this.wallMounted = wallMounted;
     this.price = price;
-    this.location = location;
   }
 
   public UUID getId() {

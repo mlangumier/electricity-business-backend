@@ -29,6 +29,7 @@ import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 public class PasswordResetToken {
 
   @Id
+  @Column(name = "user_id")
   private UUID id;
 
   @MapsId
@@ -60,8 +61,7 @@ public class PasswordResetToken {
    * Creates a token to verify the reset password demande of the user. PK inherited from the user
    * (see {@link MapsId}).
    */
-  public PasswordResetToken(User user, String tokenHash, Instant expiresAt) {
-    this.user = user;
+  public PasswordResetToken(String tokenHash, Instant expiresAt) {
     this.tokenHash = tokenHash;
     this.expiresAt = expiresAt;
   }

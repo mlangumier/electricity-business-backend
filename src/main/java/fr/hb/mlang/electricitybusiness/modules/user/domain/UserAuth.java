@@ -24,11 +24,12 @@ import java.util.UUID;
 public class UserAuth extends AuditedEntity {
 
   @Id
+  @Column(name = "user_id")
   private UUID id;
 
   @MapsId // Defines a shared PK for both entities
   @OneToOne(optional = false, fetch = FetchType.LAZY)
-  @JoinColumn(name = "id", nullable = false)
+  @JoinColumn(name = "user_id", nullable = false)
   private User user;
 
   @NotBlank
@@ -52,8 +53,7 @@ public class UserAuth extends AuditedEntity {
    * Creates credentials for the given {@link User}. The Primary Key will be inherited from the user
    * (see {@link MapsId}).
    */
-  public UserAuth(User user, String passwordHash) {
-    this.user = user;
+  public UserAuth(String passwordHash) {
     this.passwordHash = passwordHash;
     this.emailVerified = false;
     this.lastLogin = null;

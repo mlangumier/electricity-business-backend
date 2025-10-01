@@ -1,7 +1,7 @@
 package fr.hb.mlang.electricitybusiness.modules.user.domain;
 
 import fr.hb.mlang.electricitybusiness.modules.booking.Booking;
-import fr.hb.mlang.electricitybusiness.modules.location.Location;
+import fr.hb.mlang.electricitybusiness.modules.location.domain.Location;
 import fr.hb.mlang.electricitybusiness.modules.tokens.email.EmailVerificationToken;
 import fr.hb.mlang.electricitybusiness.modules.tokens.password.PasswordResetToken;
 import fr.hb.mlang.electricitybusiness.modules.tokens.refresh.RefreshToken;
@@ -130,7 +130,10 @@ public class User extends AuditedEntity {
   }
 
   public void setAuth(UserAuth auth) {
+    if (this.auth == auth) return;
+    if (this.auth != null) this.auth.setUser(null);
     this.auth = auth;
+    if (auth != null) auth.setUser(this);
   }
 
   public UserProfile getProfile() {
@@ -138,7 +141,10 @@ public class User extends AuditedEntity {
   }
 
   public void setProfile(UserProfile profile) {
+    if (this.profile == profile) return;
+    if (this.profile != null) this.profile.setUser(null);
     this.profile = profile;
+    if (profile != null) profile.setUser(this);
   }
 
   public Set<Location> getLocations() {
@@ -154,7 +160,10 @@ public class User extends AuditedEntity {
   }
 
   public void setEmailVerificationToken(EmailVerificationToken emailVerificationToken) {
+    if (this.emailVerificationToken == emailVerificationToken) return;
+    if (this.emailVerificationToken != null) this.emailVerificationToken.setUser(null);
     this.emailVerificationToken = emailVerificationToken;
+    if (emailVerificationToken != null) emailVerificationToken.setUser(this);
   }
 
   public PasswordResetToken getPasswordResetToken() {
@@ -162,7 +171,10 @@ public class User extends AuditedEntity {
   }
 
   public void setPasswordResetToken(PasswordResetToken passwordResetToken) {
+    if (this.passwordResetToken ==  passwordResetToken) return;
+    if (this.passwordResetToken != null) this.passwordResetToken.setUser(null);
     this.passwordResetToken = passwordResetToken;
+    if (passwordResetToken != null) passwordResetToken.setUser(this);
   }
 
   public Set<RefreshToken> getRefreshTokens() {

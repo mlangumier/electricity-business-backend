@@ -22,11 +22,12 @@ import java.util.UUID;
 public class UserProfile extends AuditedEntity {
 
   @Id
+  @Column(name = "user_id")
   private UUID id;
 
   @MapsId
   @OneToOne(optional = false, fetch = FetchType.LAZY)
-  @JoinColumn(name = "id", nullable = false)
+  @JoinColumn(name = "user_id", nullable = false)
   private User user;
 
   @NotBlank
@@ -63,14 +64,12 @@ public class UserProfile extends AuditedEntity {
   }
 
   public UserProfile(
-      User user,
       String firstName,
       String lastName,
       LocalDate dateOfBirth,
       String homeAddress,
       String avatar
   ) {
-    this.user = user;
     this.firstName = firstName;
     this.lastName = lastName;
     this.dateOfBirth = dateOfBirth;

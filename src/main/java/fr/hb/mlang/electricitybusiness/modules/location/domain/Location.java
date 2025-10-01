@@ -1,4 +1,4 @@
-package fr.hb.mlang.electricitybusiness.modules.location;
+package fr.hb.mlang.electricitybusiness.modules.location.domain;
 
 import fr.hb.mlang.electricitybusiness.modules.station.Station;
 import fr.hb.mlang.electricitybusiness.modules.user.domain.User;
@@ -18,13 +18,11 @@ import jakarta.persistence.Table;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
+import java.math.BigDecimal;
 import java.util.HashSet;
 import java.util.Objects;
 import java.util.Set;
 import java.util.UUID;
-import org.hibernate.annotations.JdbcTypeCode;
-import org.hibernate.type.SqlTypes;
-import org.springframework.data.geo.Point;
 
 @Entity
 @Table(name = "locations", indexes = {
@@ -58,9 +56,12 @@ public class Location extends AuditedEntity {
   private String postalCode;
 
   @NotNull
-  @JdbcTypeCode(SqlTypes.GEOMETRY)
-  @Column(name = "coordinates", nullable = false, columnDefinition = "POINT SRID 4326")
-  private Point coordinates;
+  @Column(name = "latitude", nullable = false, precision = 9, scale = 6)
+  private BigDecimal latitude;
+
+  @NotNull
+  @Column(name = "longitude", nullable = false, precision = 9, scale = 6)
+  private BigDecimal longitude;
 
   @ManyToOne(optional = false, fetch = FetchType.LAZY)
   @JoinColumn(name = "user_id", nullable = false)
@@ -75,15 +76,25 @@ public class Location extends AuditedEntity {
   public Location() {
   }
 
-  /**
-   * Entity constructor
-   */
-  public Location(String address, String city, String postalCode, Point coordinates, User user) {
+  public Location(String address, String city, String postalCode) {
     this.address = address;
     this.city = city;
     this.postalCode = postalCode;
-    this.coordinates = coordinates;
-    this.user = user;
+  }
+
+  /**
+   * Entity constructor
+   */
+  public Location(
+      String address,
+      String city,
+      String postalCode,
+      double latitude,
+      double longitude
+  ) {
+    this(address, city, postalCode);
+    this.latitude = BigDecimal.valueOf(latitude);
+    this.longitude = BigDecimal.valueOf(longitude);
   }
 
   public UUID getId() {
@@ -126,12 +137,20 @@ public class Location extends AuditedEntity {
     this.postalCode = postalCode;
   }
 
-  public Point getCoordinates() {
-    return coordinates;
+  public BigDecimal getLatitude() {
+    return latitude;
   }
 
-  public void setCoordinates(Point coordinates) {
-    this.coordinates = coordinates;
+  public void setLatitude(BigDecimal latitude) {
+    this.latitude = latitude;
+  }
+
+  public BigDecimal getLongitude() {
+    return longitude;
+  }
+
+  public void setLongitude(BigDecimal longitude) {
+    this.longitude = longitude;
   }
 
   public User getUser() {
@@ -152,14 +171,22 @@ public class Location extends AuditedEntity {
 
   //--- Helper methods
 
+  public Coordinate getCoordinates() {
+    return new Coordinate(this.latitude, this.longitude);
+  }
+
   public void addStation(Station station) {
-    if (station == null) return;
+    if (station == null) {
+      return;
+    }
     this.stations.add(station);
     station.setLocation(this);
   }
 
   public void removeStation(Station station) {
-    if (station == null) return;
+    if (station == null) {
+      return;
+    }
     this.stations.remove(station);
     station.setLocation(null);
   }
@@ -187,7 +214,6 @@ public class Location extends AuditedEntity {
         ", address2='" + address2 + '\'' +
         ", city='" + city + '\'' +
         ", postalCode='" + postalCode + '\'' +
-        ", coordinates=" + coordinates +
         super.toString() +
         '}';
   }
