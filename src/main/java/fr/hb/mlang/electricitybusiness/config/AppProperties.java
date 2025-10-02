@@ -2,6 +2,7 @@ package fr.hb.mlang.electricitybusiness.config;
 
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
+import java.nio.file.Path;
 import java.time.Duration;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 
@@ -12,6 +13,7 @@ public record AppProperties(
 ) {
 
   public record Jwt(
+      @NotNull Path keysLocation,
       @NotNull Duration accessExpiration,
       @NotNull Duration refreshExpiration,
       @NotNull Duration verificationExpiration,

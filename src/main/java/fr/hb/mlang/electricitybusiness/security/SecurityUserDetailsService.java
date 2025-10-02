@@ -12,14 +12,14 @@ import org.springframework.security.core.userdetails.UserDetails;
  * Transient adapter that implements {@link UserDetails} and wraps both {@link User} and
  * {@link UserAuth}, exposing their fields while keeping them separate (entity vs authentication).
  */
-public final class SecurityUserDetailsService implements UserDetails {
+public record SecurityUserDetailsService(
+    User user,
+    UserAuth auth
+) implements UserDetails {
 
-  private final User user;
-  private final UserAuth auth;
-
-  public SecurityUserDetailsService(User user, UserAuth userAuth) {
-    this.user = user;
-    this.auth = userAuth;
+  // Convenience factory
+  public static SecurityUserDetailsService from(User user) {
+    return new SecurityUserDetailsService(user, user.getAuth());
   }
 
   @Override
@@ -35,5 +35,10 @@ public final class SecurityUserDetailsService implements UserDetails {
   @Override
   public Collection<? extends GrantedAuthority> getAuthorities() {
     return List.of(new SimpleGrantedAuthority("ROLE_" + user.getRole().name()));
+  }
+
+  @Override
+  public boolean isEnabled() {
+    return auth.getEmailVerified();
   }
 }
