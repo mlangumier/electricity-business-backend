@@ -2,44 +2,103 @@ package fr.hb.mlang.electricitybusiness.security.jwt;
 
 import com.auth0.jwt.JWT;
 import com.auth0.jwt.interfaces.DecodedJWT;
+import fr.hb.mlang.electricitybusiness.config.AppProperties;
+import jakarta.validation.ValidationException;
+import java.time.Duration;
 import java.time.Instant;
-import java.time.temporal.ChronoUnit;
+import java.util.Date;
 import org.springframework.security.core.userdetails.UserDetails;
-import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.stereotype.Service;
 
 @Service
 public class JwtService {
 
+  private final AppProperties appProperties;
   private final JwtKeyManager jwtKeyManager;
-  private final UserDetailsService userDetailsService;
 
-  public JwtService(JwtKeyManager jwtKeyManager, UserDetailsService userDetailsService) {
+  public JwtService(AppProperties appProperties, JwtKeyManager jwtKeyManager) {
+    this.appProperties = appProperties;
     this.jwtKeyManager = jwtKeyManager;
-    this.userDetailsService = userDetailsService;
   }
 
-  public UserDetails validateToken(String token) {
-    String userEmail = this.getUserEmailFromToken(token);
-    return userDetailsService.loadUserByUsername(userEmail);
+  public String generateAccessToken(String email) {
+    return this.generateToken(email, appProperties.jwt().accessExpiration());
   }
 
-  public String getUserEmailFromToken(String token) {
-    try {
-      DecodedJWT jwt = JWT.require(jwtKeyManager.getAlgorithm()).build().verify(token);
-      return jwt.getSubject();
-    } catch (Exception e) {
-      throw new RuntimeException("Couldn't decode JWT: " + e.getMessage());
-    }
+  public String generateRefreshToken(String email) {
+    return this.generateToken(email, appProperties.jwt().refreshExpiration());
   }
 
-  public String generateToken(String email) {
+  public String generateVerificationToken(String email) {
+    return this.generateToken(email, appProperties.jwt().verificationExpiration());
+  }
+
+  public String generatePasswordResetToken(String email) {
+    return this.generateToken(email, appProperties.jwt().passwordExpiration());
+  }
+
+  /**
+   * Generic method that generates a new JWT.
+   *
+   * @param email              Email of the user who will receive the token
+   * @param expirationDuration How long should the token be active
+   * @return the generated token.
+   */
+  private String generateToken(String email, Duration expirationDuration) {
+    Instant expirationDate = Instant.now().plus(expirationDuration);
     return JWT
         .create()
         .withSubject(email)
-        .withExpiresAt(Instant.now().plus(5, ChronoUnit.MINUTES))
+        .withIssuedAt(Instant.now())
+        .withExpiresAt(expirationDate)
         .sign(jwtKeyManager.getAlgorithm());
   }
 
-  ;
+  /**
+   * Checks the validity of a token by verifying if the email corresponds to the user and if the
+   * token is expired or not.
+   *
+   * @param token       The token to verify
+   * @param userDetails The user who (supposedly) owns the token
+   * @return {true} if the user's email and token's email correspond and the token hasn't expired.
+   */
+  public boolean isTokenValid(String token, UserDetails userDetails) {
+    if (token == null || token.isBlank()) {
+      throw new ValidationException("Token is missing or empty");
+    }
+    String tokenEmail = this.extractUserEmail(token);
+    return (tokenEmail.equals(userDetails.getUsername()) && !this.isTokenExpired(token));
+  }
+
+  /**
+   * Checks if the token is expired.
+   *
+   * @param token The token to verify.
+   * @return {true} if the token is expired, else {false}.
+   */
+  public boolean isTokenExpired(String token) {
+    return this.extractExpiration(token).before(new Date());
+  }
+
+  /**
+   * Gets the expiration date of the token.
+   *
+   * @param token The token to verify
+   * @return The expiration date.
+   */
+  public Date extractExpiration(String token) {
+    DecodedJWT jwt = JWT.require(jwtKeyManager.getAlgorithm()).build().verify(token);
+    return jwt.getExpiresAt();
+  }
+
+  /**
+   * Gets the email used to create the token.
+   *
+   * @param token The token to verify
+   * @return A user's email address.
+   */
+  public String extractUserEmail(String token) {
+    DecodedJWT jwt = JWT.require(jwtKeyManager.getAlgorithm()).build().verify(token);
+    return jwt.getSubject();
+  }
 }
