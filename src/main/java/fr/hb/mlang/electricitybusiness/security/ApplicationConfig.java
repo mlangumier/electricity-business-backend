@@ -2,6 +2,7 @@ package fr.hb.mlang.electricitybusiness.security;
 
 import fr.hb.mlang.electricitybusiness.modules.user.domain.User;
 import fr.hb.mlang.electricitybusiness.modules.user.repository.UserRepository;
+import fr.hb.mlang.electricitybusiness.security.auth.SecurityUserDetails;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.authentication.AuthenticationManager;
