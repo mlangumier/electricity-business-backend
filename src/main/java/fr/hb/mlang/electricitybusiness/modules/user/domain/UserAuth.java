@@ -56,7 +56,6 @@ public class UserAuth extends AuditedEntity {
   public UserAuth(String passwordHash) {
     this.passwordHash = passwordHash;
     this.emailVerified = false;
-    this.lastLogin = null;
   }
 
   public UUID getId() {
