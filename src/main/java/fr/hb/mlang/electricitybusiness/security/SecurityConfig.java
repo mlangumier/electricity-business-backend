@@ -6,7 +6,6 @@ import java.time.Duration;
 import java.util.List;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.security.authentication.AuthenticationProvider;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
@@ -23,16 +22,10 @@ public class SecurityConfig {
 
   private final AppProperties appProperties;
   private final JwtAuthenticationFilter jwtAuthFilter;
-  private final AuthenticationProvider authProvider;
 
-  public SecurityConfig(
-      JwtAuthenticationFilter jwtAuthFilter,
-      AppProperties appProperties,
-      AuthenticationProvider authProvider
-  ) {
+  public SecurityConfig(JwtAuthenticationFilter jwtAuthFilter, AppProperties appProperties) {
     this.appProperties = appProperties;
     this.jwtAuthFilter = jwtAuthFilter;
-    this.authProvider = authProvider;
   }
 
   @Bean
@@ -40,14 +33,14 @@ public class SecurityConfig {
     http
         .csrf(AbstractHttpConfigurer::disable)
         .cors(cors -> cors.configurationSource(corsConfigurationSource()))
+        .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
+        .addFilterBefore(jwtAuthFilter, UsernamePasswordAuthenticationFilter.class)
         .authorizeHttpRequests(auth -> auth
             .requestMatchers("/api/v1/me/**").authenticated()
             //TODO: Add requestMatchers for specific HttpMethod + routes
             .anyRequest().permitAll()
         )
-        .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
-        .addFilterBefore(jwtAuthFilter, UsernamePasswordAuthenticationFilter.class)
-        .authenticationProvider(authProvider)
+    //  .authenticationProvider(authProvider) // If issues with authentication, check if creating a custom authProvider helps
     ;
 
     return http.build();

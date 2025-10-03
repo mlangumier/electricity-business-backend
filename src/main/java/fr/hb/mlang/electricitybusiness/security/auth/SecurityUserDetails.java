@@ -1,4 +1,4 @@
-package fr.hb.mlang.electricitybusiness.security;
+package fr.hb.mlang.electricitybusiness.security.auth;
 
 import fr.hb.mlang.electricitybusiness.modules.user.domain.User;
 import fr.hb.mlang.electricitybusiness.modules.user.domain.UserAuth;

@@ -82,7 +82,7 @@ public class User extends AuditedEntity {
   /**
    * Required by JPA
    */
-  protected User() {
+  public User() {
   }
 
   /**
