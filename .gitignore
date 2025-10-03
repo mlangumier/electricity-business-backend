@@ -3,7 +3,7 @@ target/
 .mvn/wrapper/maven-wrapper.jar
 !**/src/main/**/target/
 !**/src/test/**/target/
-!**/src/main/java/resources/keys/**
+src/main/resources/keys/**
 .env*
 
 ### STS ###
