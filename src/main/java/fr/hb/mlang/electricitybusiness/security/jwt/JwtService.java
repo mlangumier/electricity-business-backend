@@ -13,28 +13,28 @@ import org.springframework.stereotype.Service;
 @Service
 public class JwtService {
 
-  private final AppProperties appProperties;
+  private final AppProperties.Jwt jwtProps;
   private final JwtKeyManager jwtKeyManager;
 
-  public JwtService(AppProperties appProperties, JwtKeyManager jwtKeyManager) {
-    this.appProperties = appProperties;
+  public JwtService(AppProperties appProps, JwtKeyManager jwtKeyManager) {
+    this.jwtProps = appProps.jwt();
     this.jwtKeyManager = jwtKeyManager;
   }
 
   public String generateAccessToken(String email) {
-    return this.generateToken(email, appProperties.jwt().accessExpiration());
+    return this.generateToken(email, jwtProps.accessExpiration());
   }
 
   public String generateRefreshToken(String email) {
-    return this.generateToken(email, appProperties.jwt().refreshExpiration());
+    return this.generateToken(email, jwtProps.refreshExpiration());
   }
 
   public String generateVerificationToken(String email) {
-    return this.generateToken(email, appProperties.jwt().verificationExpiration());
+    return this.generateToken(email, jwtProps.verificationExpiration());
   }
 
   public String generatePasswordResetToken(String email) {
-    return this.generateToken(email, appProperties.jwt().passwordExpiration());
+    return this.generateToken(email, jwtProps.passwordExpiration());
   }
 
   /**
