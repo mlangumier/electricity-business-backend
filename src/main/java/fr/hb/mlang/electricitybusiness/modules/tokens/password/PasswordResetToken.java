@@ -38,9 +38,9 @@ public class PasswordResetToken {
   private User user;
 
   @NotBlank
-  @Size(max = 64)
-  @Column(name = "token_hash", nullable = false, updatable = false, length = 64)
-  private String tokenHash;
+  @Size(max = 512)
+  @Column(name = "token", nullable = false, updatable = false, length = 512)
+  private String token;
 
   @CreatedDate
   @Column(name = "created_at", nullable = false, updatable = false)
@@ -61,8 +61,8 @@ public class PasswordResetToken {
    * Creates a token to verify the reset password demande of the user. PK inherited from the user
    * (see {@link MapsId}).
    */
-  public PasswordResetToken(String tokenHash, Instant expiresAt) {
-    this.tokenHash = tokenHash;
+  public PasswordResetToken(String token, Instant expiresAt) {
+    this.token = token;
     this.expiresAt = expiresAt;
   }
 
@@ -74,12 +74,12 @@ public class PasswordResetToken {
     this.id = id;
   }
 
-  public String getTokenHash() {
-    return tokenHash;
+  public String getToken() {
+    return token;
   }
 
-  public void setTokenHash(String tokenHash) {
-    this.tokenHash = tokenHash;
+  public void setToken(String tokenHash) {
+    this.token = tokenHash;
   }
 
   public Instant getCreatedAt() {
@@ -123,7 +123,7 @@ public class PasswordResetToken {
   public String toString() {
     return "PasswordResetToken{" +
         "id=" + id +
-        ", tokenHash='" + tokenHash + '\'' +
+        ", tokenHash='" + token + '\'' +
         ", createdAt=" + createdAt +
         ", expiresAt=" + expiresAt +
         '}';
