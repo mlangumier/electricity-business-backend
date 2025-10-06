@@ -38,9 +38,9 @@ public class EmailVerificationToken {
   private User user;
 
   @NotBlank
-  @Size(max = 512)
-  @Column(name = "token", nullable = false, updatable = false, unique = true, length = 512)
-  private String token;
+  @Size(max = 64)
+  @Column(name = "token_hash", nullable = false, updatable = false, unique = true, length = 64)
+  private String tokenHash;
 
   @CreatedDate
   @Column(name = "created_at", nullable = false, updatable = false)
@@ -61,8 +61,8 @@ public class EmailVerificationToken {
   /**
    * Creates a token to verify the user's email. PK inherited from the user (see {@link MapsId}).
    */
-  public EmailVerificationToken(String token, Instant expiresAt) {
-    this.token = token;
+  public EmailVerificationToken(String tokenHash, Instant expiresAt) {
+    this.tokenHash = tokenHash;
     this.expiresAt = expiresAt;
   }
 
@@ -74,12 +74,12 @@ public class EmailVerificationToken {
     this.id = id;
   }
 
-  public String getToken() {
-    return token;
+  public String getTokenHash() {
+    return tokenHash;
   }
 
-  public void setToken(String tokenHash) {
-    this.token = tokenHash;
+  public void setTokenHash(String tokenHash) {
+    this.tokenHash = tokenHash;
   }
 
   public Instant getCreatedAt() {
@@ -123,7 +123,7 @@ public class EmailVerificationToken {
   public String toString() {
     return "EmailVerificationToken{" +
         "id=" + id +
-        ", tokenHash='" + token + '\'' +
+        ", tokenHash='" + tokenHash + '\'' +
         ", createdAt=" + createdAt +
         ", expiresAt=" + expiresAt +
         '}';

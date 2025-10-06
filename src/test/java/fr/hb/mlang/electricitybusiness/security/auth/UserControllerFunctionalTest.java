@@ -3,12 +3,13 @@ package fr.hb.mlang.electricitybusiness.security.auth;
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.csrf;
 
 import fr.hb.mlang.electricitybusiness.config.DatabaseConfigTests;
+import fr.hb.mlang.electricitybusiness.modules.user.domain.User;
 import fr.hb.mlang.electricitybusiness.modules.user.repository.UserRepository;
 import fr.hb.mlang.electricitybusiness.utils.JsonTestUtil;
 import java.io.IOException;
+import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
-import org.skyscreamer.jsonassert.JSONAssert;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabase;
 import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabase.Replace;
@@ -16,6 +17,7 @@ import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMock
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.context.SpringBootTest.WebEnvironment;
 import org.springframework.http.MediaType;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers;
@@ -32,12 +34,11 @@ public class UserControllerFunctionalTest extends DatabaseConfigTests {
   UserRepository userRepository;
 
   @Test
-  @DisplayName("Valid registration")
-  void givenRegisterRequest_whenDataIsValid_thenCreateUserShouldSucceed() throws Exception {
+  @DisplayName("Valid registration: user registered & now exists in database")
+  void givenRegisterRequest_whenDataIsValid_thenCreateUserShouldSucceedAndUserShouldExist() throws Exception {
     String requestJson = this.readJson("valid.json");
-    String expectedResponse = this.readJson("expected.json");
 
-    String response = mockMvc
+    mockMvc
         .perform(MockMvcRequestBuilders.post("/api/v1/register")
             .contentType(MediaType.APPLICATION_JSON)
             .content(requestJson)
@@ -47,8 +48,11 @@ public class UserControllerFunctionalTest extends DatabaseConfigTests {
         .getResponse()
         .getContentAsString();
 
-    System.out.println("--- TEST VALID: " + response);
-    JSONAssert.assertEquals(expectedResponse, response, false);
+    User user = userRepository
+        .findByEmail("test1@test.com")
+        .orElseThrow(() -> new UsernameNotFoundException("No user found with this email address."));
+
+    Assertions.assertNotNull(user);
   }
 
   @Test
