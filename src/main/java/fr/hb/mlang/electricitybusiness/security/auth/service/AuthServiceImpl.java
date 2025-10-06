@@ -1,5 +1,6 @@
 package fr.hb.mlang.electricitybusiness.security.auth.service;
 
+import fr.hb.mlang.electricitybusiness.config.AppProperties;
 import fr.hb.mlang.electricitybusiness.modules.tokens.email.EmailVerificationToken;
 import fr.hb.mlang.electricitybusiness.modules.user.domain.User;
 import fr.hb.mlang.electricitybusiness.modules.user.domain.UserAuth;
@@ -7,7 +8,8 @@ import fr.hb.mlang.electricitybusiness.modules.user.repository.UserRepository;
 import fr.hb.mlang.electricitybusiness.modules.userprofile.UserProfile;
 import fr.hb.mlang.electricitybusiness.security.auth.exception.EmailAlreadyInUseException;
 import fr.hb.mlang.electricitybusiness.security.auth.web.dto.RegisterRequest;
-import fr.hb.mlang.electricitybusiness.security.jwt.JwtService;
+import fr.hb.mlang.electricitybusiness.security.jwt.VerificationToken;
+import java.time.Instant;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
@@ -16,12 +18,16 @@ public class AuthServiceImpl implements AuthService {
 
   private final UserRepository userRepository;
   private final PasswordEncoder encoder;
-  private final JwtService jwtService;
+  private final AppProperties.Jwt jwtProps;
 
-  public AuthServiceImpl(UserRepository userRepository, PasswordEncoder encoder, JwtService jwtService) {
+  public AuthServiceImpl(
+      UserRepository userRepository,
+      PasswordEncoder encoder,
+      AppProperties appProps
+  ) {
     this.userRepository = userRepository;
     this.encoder = encoder;
-    this.jwtService = jwtService;
+    this.jwtProps = appProps.jwt();
   }
 
   @Override
@@ -42,20 +48,31 @@ public class AuthServiceImpl implements AuthService {
     user.setAuth(userAuth);
 
     // Create & set user profile
-    UserProfile profile = new UserProfile(req.firstName(), req.lastName(), req.dateOfBirth(), req.homeAddress(), null);
+    UserProfile profile = new UserProfile(
+        req.firstName(),
+        req.lastName(),
+        req.dateOfBirth(),
+        req.homeAddress(),
+        null
+    );
     if (req.avatar() != null) {
       profile.setAvatar(req.avatar());
     }
     user.setProfile(profile);
 
     // Create & set verification token
-    String token = jwtService.generateVerificationToken(req.email());
-    EmailVerificationToken emailVerificationToken = new EmailVerificationToken(token, jwtService.extractExpiration(token).toInstant());
+    String rawToken = VerificationToken.generateRawToken();
+    String hashedToken = VerificationToken.hashToken(rawToken);
+
+    EmailVerificationToken emailVerificationToken = new EmailVerificationToken(
+        hashedToken,
+        Instant.now().plus(jwtProps.verificationExpiration())
+    );
     user.setEmailVerificationToken(emailVerificationToken);
 
     // Save user with default relationships (OneToOne)
     userRepository.save(user);
 
-    // TODO: on success -> Send email & OK
+    // TODO: on success -> Send email (with rawToken) & OK
   }
 }
