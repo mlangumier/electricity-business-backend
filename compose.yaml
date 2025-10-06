@@ -5,11 +5,11 @@ services:
     restart: unless-stopped
     environment:
       MYSQL_DATABASE: db_electricity_business
-      MYSQL_ROOT_PASSWORD: root
+      MYSQL_ROOT_PASSWORD: root@password
       MYSQL_USER: dev
       MYSQL_PASSWORD: dev@password
     volumes:                  # Persist data between restarts
-      - eb_mysql_data:/var/lib/mysql
+      - eb_mysql:/var/lib/mysql
     ports:
       - 3306:3306
     healthcheck:               # Wait until database is ready
@@ -21,7 +21,7 @@ services:
       - eb-net
 
 volumes:
-  eb_mysql_data:
+  eb_mysql:
 
 networks:
   eb-net:
