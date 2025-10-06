@@ -29,14 +29,6 @@ public class JwtService {
     return this.generateToken(email, jwtProps.refreshExpiration());
   }
 
-  public String generateVerificationToken(String email) {
-    return this.generateToken(email, jwtProps.verificationExpiration());
-  }
-
-  public String generatePasswordResetToken(String email) {
-    return this.generateToken(email, jwtProps.passwordExpiration());
-  }
-
   /**
    * Generic method that generates a new JWT.
    *

@@ -13,6 +13,7 @@ import fr.hb.mlang.electricitybusiness.modules.user.domain.User;
 import fr.hb.mlang.electricitybusiness.modules.user.domain.UserAuth;
 import fr.hb.mlang.electricitybusiness.modules.user.repository.UserRepository;
 import fr.hb.mlang.electricitybusiness.modules.userprofile.UserProfile;
+import fr.hb.mlang.electricitybusiness.security.jwt.VerificationToken;
 import fr.hb.mlang.electricitybusiness.shared.utils.MoneyUtils;
 import java.time.Instant;
 import java.time.LocalDate;
@@ -26,16 +27,18 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 @Service
-@Profile("!prod")
+@Profile("dev")
 public class DatabaseLoader implements ApplicationRunner {
   private final Logger log = LoggerFactory.getLogger(DatabaseLoader.class);
+  private final AppProperties.Jwt jwtProps;
   private final PasswordEncoder encoder;
   private final UserRepository userRepository;
   private final LocationRepository locationRepository;
   private final StationRepository stationRepository;
   private final BookingRepository bookingRepository;
 
-  public DatabaseLoader(PasswordEncoder encoder, UserRepository userRepository, LocationRepository locationRepository, StationRepository stationRepository, BookingRepository bookingRepository) {
+  public DatabaseLoader(AppProperties jwtProps, PasswordEncoder encoder, UserRepository userRepository, LocationRepository locationRepository, StationRepository stationRepository, BookingRepository bookingRepository) {
+    this.jwtProps = jwtProps.jwt();
     this.encoder = encoder;
     this.userRepository = userRepository;
     this.locationRepository = locationRepository;
@@ -56,9 +59,9 @@ public class DatabaseLoader implements ApplicationRunner {
       user.setAuth(userAuth);
       UserProfile profile = new UserProfile("Mathieu", "Langumier", LocalDate.of(1992, 2, 24), "24 place Jean Jaurès, St-Etienne", null);
       user.setProfile(profile);
-      user.setEmailVerificationToken(new EmailVerificationToken(encoder.encode("token"), Instant.now().plus(30, ChronoUnit.MINUTES)));
-      user.setPasswordResetToken(new PasswordResetToken(encoder.encode("token"), Instant.now().plus(30, ChronoUnit.MINUTES)));
-      user.addRefreshToken(new RefreshToken(encoder.encode("token"), Instant.now().plus(30, ChronoUnit.MINUTES)));
+      user.setEmailVerificationToken(new EmailVerificationToken(VerificationToken.hashToken(VerificationToken.generateRawToken()), Instant.now().plus(jwtProps.verificationExpiration())));
+      user.setPasswordResetToken(new PasswordResetToken(encoder.encode("token"), Instant.now().plus(jwtProps.passwordExpiration())));
+      user.addRefreshToken(new RefreshToken(encoder.encode("token"), Instant.now().plus(jwtProps.refreshExpiration())));
       userRepository.save(user);
 
       //---- User 2
@@ -67,9 +70,9 @@ public class DatabaseLoader implements ApplicationRunner {
       user2.setAuth(userAuth2);
       UserProfile profile2 = new UserProfile("Sam", "Lang", LocalDate.of(1991, 1, 1), "24 place Jean Jaurès", null);
       user2.setProfile(profile2);
-      user.setEmailVerificationToken(new EmailVerificationToken(encoder.encode("token"), Instant.now().plus(30, ChronoUnit.MINUTES)));
-      user.setPasswordResetToken(new PasswordResetToken(encoder.encode("token"), Instant.now().plus(30, ChronoUnit.MINUTES)));
-      user.addRefreshToken(new RefreshToken(encoder.encode("token"), Instant.now().plus(30, ChronoUnit.MINUTES)));
+      user.setEmailVerificationToken(new EmailVerificationToken(encoder.encode("token"), Instant.now().plus(jwtProps.verificationExpiration())));
+      user.setPasswordResetToken(new PasswordResetToken(encoder.encode("token"), Instant.now().plus(jwtProps.passwordExpiration())));
+      user.addRefreshToken(new RefreshToken(encoder.encode("token"), Instant.now().plus(jwtProps.refreshExpiration())));
       userRepository.save(user2);
 
       //--- Location
