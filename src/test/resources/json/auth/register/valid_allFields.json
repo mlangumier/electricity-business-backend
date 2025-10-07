@@ -1,9 +1,9 @@
 {
-  "email": "test1@test.com",
-  "phoneNumber": "06000000001",
+  "email": "test@test.com",
+  "phoneNumber": "06000000000",
   "password": "test@password",
-  "firstName": "Test1",
-  "lastName": "Sonoftest",
+  "firstName": "Test",
+  "lastName": "Testson",
   "dateOfBirth": "1990-02-24",
   "homeAddress": "20 rue Registration, 69000, Lyon",
   "avatar": "https://avatar.iran.liara.run/public"
