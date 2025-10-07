@@ -15,6 +15,18 @@ public final class VerificationToken {
   private static final SecureRandom RNG = new SecureRandom();
 
   /**
+   * Generates a token that will be shared to the user via email links url (email verification &
+   * password reset).
+   *
+   * @return a raw token of a 32-characters length
+   */
+  public static String generateRawToken() {
+    byte[] buf = new byte[32]; // 256-bit
+    RNG.nextBytes(buf);
+    return Base64.getUrlEncoder().withoutPadding().encodeToString(buf);
+  }
+
+  /**
    * Hash a token to be stored in the database.
    *
    * @param rawToken token to hash.
@@ -35,17 +47,5 @@ public final class VerificationToken {
         sb.append(String.format("%02x", b));
       }
       return sb.toString();
-  }
-
-  /**
-   * Generates a token that will be shared to the user via email links url (email verification &
-   * password reset).
-   *
-   * @return a raw token of a 32-characters length
-   */
-  public static String generateRawToken() {
-    byte[] buf = new byte[32]; // 256-bit
-    RNG.nextBytes(buf);
-    return Base64.getUrlEncoder().withoutPadding().encodeToString(buf);
   }
 }

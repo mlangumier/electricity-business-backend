@@ -1,0 +1,8 @@
+{
+  "email": "test@test.com",
+  "password": "test@password",
+  "firstName": "Test",
+  "lastName": "Testson",
+  "dateOfBirth": "1990-02-24",
+  "homeAddress": "20 rue Registration, 69000, Lyon"
+}
