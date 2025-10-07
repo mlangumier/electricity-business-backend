@@ -56,23 +56,22 @@ public class DatabaseLoader implements ApplicationRunner {
       //--- User 1 (user, userAuth, userProfile, all 3 tokens)
       User user = userRepository.save(new User("matt@test.com",null));
       UserAuth userAuth = new UserAuth(encoder.encode("password"));
+      userAuth.setEmailVerified(true);
       user.setAuth(userAuth);
-      UserProfile profile = new UserProfile("Mathieu", "Langumier", LocalDate.of(1992, 2, 24), "24 place Jean Jaurès, St-Etienne", null);
+      UserProfile profile = new UserProfile("Mathieu", "Langumier", LocalDate.of(1992, 2, 24), "24 place Jean Jaurès, St-Etienne", "https://avatar.iran.liara.run/public");
       user.setProfile(profile);
       user.setEmailVerificationToken(new EmailVerificationToken(VerificationToken.hashToken(VerificationToken.generateRawToken()), Instant.now().plus(jwtProps.verificationExpiration())));
-      user.setPasswordResetToken(new PasswordResetToken(encoder.encode("token"), Instant.now().plus(jwtProps.passwordExpiration())));
-      user.addRefreshToken(new RefreshToken(encoder.encode("token"), Instant.now().plus(jwtProps.refreshExpiration())));
+      user.setPasswordResetToken(new PasswordResetToken(VerificationToken.hashToken(VerificationToken.generateRawToken()), Instant.now().plus(jwtProps.passwordExpiration())));
+      user.addRefreshToken(new RefreshToken(VerificationToken.hashToken(VerificationToken.generateRawToken()), Instant.now().plus(jwtProps.refreshExpiration())));
       userRepository.save(user);
 
-      //---- User 2
+      //---- User 2 (user, userAuth, userProfile, emailVerificationToken)
       User user2 = userRepository.save(new User("sam@test.com", "0600000000"));
       UserAuth userAuth2 = new UserAuth(encoder.encode("password"));
       user2.setAuth(userAuth2);
       UserProfile profile2 = new UserProfile("Sam", "Lang", LocalDate.of(1991, 1, 1), "24 place Jean Jaurès", null);
       user2.setProfile(profile2);
-      user.setEmailVerificationToken(new EmailVerificationToken(encoder.encode("token"), Instant.now().plus(jwtProps.verificationExpiration())));
-      user.setPasswordResetToken(new PasswordResetToken(encoder.encode("token"), Instant.now().plus(jwtProps.passwordExpiration())));
-      user.addRefreshToken(new RefreshToken(encoder.encode("token"), Instant.now().plus(jwtProps.refreshExpiration())));
+      user.setEmailVerificationToken(new EmailVerificationToken(VerificationToken.hashToken(VerificationToken.generateRawToken()), Instant.now().plus(jwtProps.verificationExpiration())));
       userRepository.save(user2);
 
       //--- Location

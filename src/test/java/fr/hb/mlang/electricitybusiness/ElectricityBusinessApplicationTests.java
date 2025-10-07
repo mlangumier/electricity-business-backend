@@ -11,7 +11,6 @@ class ElectricityBusinessApplicationTests extends DatabaseConfigTests {
 
   @Test
   void contextLoads() {
-    System.out.println("Context loaded!");
   }
 
 }

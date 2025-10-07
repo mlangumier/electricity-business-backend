@@ -36,31 +36,30 @@ public class AuthServiceImpl implements AuthService {
       throw new EmailAlreadyInUseException(req.email());
     }
 
+    // Create User
     User user = new User();
-    user.setEmail(req.email());
+    user.setEmail(req.email().toLowerCase());
     if (req.phoneNumber() != null) {
       user.setPhoneNumber(req.phoneNumber());
     }
-    //userRepository.save(user);
 
-    // Create & set authentication password
+    // Create & set UserAuth password
     UserAuth userAuth = new UserAuth(this.encoder.encode(req.password()));
     user.setAuth(userAuth);
 
-    // Create & set user profile
+    // Create & set UserProfile
     UserProfile profile = new UserProfile(
         req.firstName(),
         req.lastName(),
         req.dateOfBirth(),
-        req.homeAddress(),
-        null
+        req.homeAddress()
     );
     if (req.avatar() != null) {
       profile.setAvatar(req.avatar());
     }
     user.setProfile(profile);
 
-    // Create & set verification token
+    // Create & set EmailVerificationToken
     String rawToken = VerificationToken.generateRawToken();
     String hashedToken = VerificationToken.hashToken(rawToken);
 
@@ -70,7 +69,7 @@ public class AuthServiceImpl implements AuthService {
     );
     user.setEmailVerificationToken(emailVerificationToken);
 
-    // Save user with default relationships (OneToOne)
+    // Save user with default relationships
     userRepository.save(user);
 
     // TODO: on success -> Send email (with rawToken) & OK
