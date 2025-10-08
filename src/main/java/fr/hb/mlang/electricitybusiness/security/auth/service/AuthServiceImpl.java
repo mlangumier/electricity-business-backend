@@ -6,8 +6,9 @@ import fr.hb.mlang.electricitybusiness.modules.user.domain.User;
 import fr.hb.mlang.electricitybusiness.modules.user.domain.UserAuth;
 import fr.hb.mlang.electricitybusiness.modules.user.repository.UserRepository;
 import fr.hb.mlang.electricitybusiness.modules.userprofile.UserProfile;
+import fr.hb.mlang.electricitybusiness.security.auth.controller.dto.EmailAvailableRequest;
+import fr.hb.mlang.electricitybusiness.security.auth.controller.dto.RegisterRequest;
 import fr.hb.mlang.electricitybusiness.security.auth.exception.EmailAlreadyInUseException;
-import fr.hb.mlang.electricitybusiness.security.auth.web.dto.RegisterRequest;
 import fr.hb.mlang.electricitybusiness.security.jwt.VerificationToken;
 import java.time.Instant;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -28,6 +29,11 @@ public class AuthServiceImpl implements AuthService {
     this.userRepository = userRepository;
     this.encoder = encoder;
     this.jwtProps = appProps.jwt();
+  }
+
+  @Override
+  public Boolean checkIsEmailAvailable(EmailAvailableRequest request) {
+    return userRepository.findByEmail(request.email()).isPresent();
   }
 
   @Override

@@ -1,7 +1,8 @@
-package fr.hb.mlang.electricitybusiness.security.auth.web;
+package fr.hb.mlang.electricitybusiness.security.auth.controller;
 
+import fr.hb.mlang.electricitybusiness.security.auth.controller.dto.EmailAvailableRequest;
+import fr.hb.mlang.electricitybusiness.security.auth.controller.dto.RegisterRequest;
 import fr.hb.mlang.electricitybusiness.security.auth.service.AuthServiceImpl;
-import fr.hb.mlang.electricitybusiness.security.auth.web.dto.RegisterRequest;
 import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -18,6 +19,12 @@ public class AuthController {
 
   public AuthController(AuthServiceImpl authService) {
     this.authService = authService;
+  }
+
+  @PostMapping("/email-available")
+  public ResponseEntity<Boolean> checkEmailIsAvailable(@Valid @RequestBody EmailAvailableRequest request) {
+    Boolean isAvailable = authService.checkIsEmailAvailable(request);
+    return ResponseEntity.status(HttpStatus.OK).body(isAvailable);
   }
 
   @PostMapping("/register")

@@ -1,4 +1,4 @@
-package fr.hb.mlang.electricitybusiness.security.auth.web;
+package fr.hb.mlang.electricitybusiness.security.auth.controller;
 
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
