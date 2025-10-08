@@ -2,14 +2,19 @@ package fr.hb.mlang.electricitybusiness.security.auth.service;
 
 import fr.hb.mlang.electricitybusiness.config.AppProperties;
 import fr.hb.mlang.electricitybusiness.modules.tokens.email.EmailVerificationToken;
+import fr.hb.mlang.electricitybusiness.modules.tokens.email.EmailVerificationTokenRepository;
 import fr.hb.mlang.electricitybusiness.modules.user.domain.User;
 import fr.hb.mlang.electricitybusiness.modules.user.domain.UserAuth;
 import fr.hb.mlang.electricitybusiness.modules.user.repository.UserRepository;
 import fr.hb.mlang.electricitybusiness.modules.userprofile.UserProfile;
+import fr.hb.mlang.electricitybusiness.security.auth.SecurityUserDetails;
 import fr.hb.mlang.electricitybusiness.security.auth.controller.dto.EmailAvailableRequest;
 import fr.hb.mlang.electricitybusiness.security.auth.controller.dto.RegisterRequest;
 import fr.hb.mlang.electricitybusiness.security.auth.exception.EmailAlreadyInUseException;
+import fr.hb.mlang.electricitybusiness.security.auth.exception.ExpiredTokenException;
+import fr.hb.mlang.electricitybusiness.security.auth.exception.UserAlreadyVerifiedException;
 import fr.hb.mlang.electricitybusiness.security.jwt.VerificationToken;
+import jakarta.persistence.EntityNotFoundException;
 import java.time.Instant;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -18,15 +23,18 @@ import org.springframework.stereotype.Service;
 public class AuthServiceImpl implements AuthService {
 
   private final UserRepository userRepository;
+  private final EmailVerificationTokenRepository emailTokenRepository;
   private final PasswordEncoder encoder;
   private final AppProperties.Jwt jwtProps;
 
   public AuthServiceImpl(
       UserRepository userRepository,
+      EmailVerificationTokenRepository emailTokenRepository,
       PasswordEncoder encoder,
       AppProperties appProps
   ) {
     this.userRepository = userRepository;
+    this.emailTokenRepository = emailTokenRepository;
     this.encoder = encoder;
     this.jwtProps = appProps.jwt();
   }
@@ -79,5 +87,33 @@ public class AuthServiceImpl implements AuthService {
     userRepository.save(user);
 
     // TODO: on success -> Send email (with rawToken) & OK
+  }
+
+  @Override
+  public void verifyAccount(String token) {
+    String tokenHash = VerificationToken.hashToken(token);
+
+    EmailVerificationToken tokenEntity = emailTokenRepository
+        .findByTokenHash(tokenHash)
+        .orElseThrow(() -> new EntityNotFoundException("Couldn't find email verification token"));
+
+    if (tokenEntity.getExpiresAt().isBefore(Instant.now())) {
+      throw new ExpiredTokenException(
+          "Email verification token is expired: " + tokenEntity.getExpiresAt());
+    }
+
+    // Use our adapter to handle data from both User & UserAuth
+    SecurityUserDetails userDetails = SecurityUserDetails.from(tokenEntity.getUser());
+
+    if (userDetails.auth().getEmailVerified()) {
+      throw new UserAlreadyVerifiedException(userDetails.user().getEmail());
+    }
+
+    // Verifications checks passed -> set user verified & delete email verification token
+    userDetails.auth().setEmailVerified(true);
+    userRepository.save(userDetails.user());
+    emailTokenRepository.delete(tokenEntity);
+
+    //TODO: send welcome email with link to login page (& optional: short description of available features)
   }
 }
