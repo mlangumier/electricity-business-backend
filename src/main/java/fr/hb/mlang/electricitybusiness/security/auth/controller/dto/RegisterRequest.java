@@ -1,4 +1,4 @@
-package fr.hb.mlang.electricitybusiness.security.auth.web.dto;
+package fr.hb.mlang.electricitybusiness.security.auth.controller.dto;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonProperty.Access;
