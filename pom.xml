@@ -34,6 +34,7 @@
     <maven.compiler.target>${java.version}</maven.compiler.target>
     <mapstruct.version>1.6.3</mapstruct.version>
     <openhtml.version>1.0.10</openhtml.version>
+    <sonar.organization>mlangumier</sonar.organization>
   </properties>
 
   <!-- Align test containers versions -->
