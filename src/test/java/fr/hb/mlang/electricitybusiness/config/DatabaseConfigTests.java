@@ -15,7 +15,7 @@ public abstract class DatabaseConfigTests {
   //TODO: Create one set of data for all tests, with fixed entities for expected fetch requests
 
   static final MySQLContainer<?> mysql =
-      new MySQLContainer<>(DockerImageName.parse("mysql:8.4")).withReuse(true);
+      new MySQLContainer<>(DockerImageName.parse("mysql:8.4"));
 
   @BeforeAll
   static void startContainer() {
