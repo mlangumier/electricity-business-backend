@@ -15,6 +15,7 @@ import fr.hb.mlang.electricitybusiness.security.auth.exception.ExpiredTokenExcep
 import fr.hb.mlang.electricitybusiness.security.auth.exception.UserAlreadyVerifiedException;
 import fr.hb.mlang.electricitybusiness.security.jwt.VerificationToken;
 import jakarta.persistence.EntityNotFoundException;
+import jakarta.transaction.Transactional;
 import java.time.Instant;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -41,6 +42,7 @@ public class AuthServiceImpl implements AuthService {
 
   @Override
   public Boolean checkIsEmailAvailable(EmailAvailableRequest request) {
+    //FIXME: Change to find().elseThrow() & void return
     return userRepository.findByEmail(request.email()).isPresent();
   }
 
@@ -90,6 +92,7 @@ public class AuthServiceImpl implements AuthService {
   }
 
   @Override
+  @Transactional
   public void verifyAccount(String token) {
     String tokenHash = VerificationToken.hashToken(token);
 
@@ -111,8 +114,8 @@ public class AuthServiceImpl implements AuthService {
 
     // Verifications checks passed -> set user verified & delete email verification token
     userDetails.auth().setEmailVerified(true);
+    userDetails.user().setEmailVerificationToken(null);
     userRepository.save(userDetails.user());
-    emailTokenRepository.delete(tokenEntity);
 
     //TODO: send welcome email with link to login page (& optional: short description of available features)
   }
