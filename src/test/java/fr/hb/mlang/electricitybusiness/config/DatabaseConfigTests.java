@@ -2,23 +2,20 @@ package fr.hb.mlang.electricitybusiness.config;
 
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
-import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.DynamicPropertyRegistry;
 import org.springframework.test.context.DynamicPropertySource;
-import org.springframework.test.context.junit.jupiter.SpringExtension;
 import org.testcontainers.containers.MySQLContainer;
 import org.testcontainers.utility.DockerImageName;
 
-@ExtendWith(SpringExtension.class)
 @ActiveProfiles("test")
 public abstract class DatabaseConfigTests {
 
+  //TODO: Add persistence option to keep the container alive during all integration tests (need shorter lifetime)
+  //TODO: Create one set of data for all tests, with fixed entities for expected fetch requests
+
   static final MySQLContainer<?> mysql =
-      new MySQLContainer<>(DockerImageName.parse("mysql:8.4"))
-          .withDatabaseName("electricity_business_test")
-          .withUsername("test")
-          .withPassword("test@password");
+      new MySQLContainer<>(DockerImageName.parse("mysql:8.4")).withReuse(true);
 
   @BeforeAll
   static void startContainer() {

@@ -29,7 +29,7 @@ import org.springframework.test.web.servlet.MockMvc;
 @SpringBootTest(webEnvironment = WebEnvironment.MOCK)
 @AutoConfigureMockMvc
 @AutoConfigureTestDatabase(replace = Replace.NONE) // Keep TestContainers datasource
-class AuthControllerRegisterIntegrationTest extends DatabaseConfigTests {
+public class RegisterAccountIntegrationTest extends DatabaseConfigTests {
 
   @Autowired
   private MockMvc mockMvc;
@@ -45,7 +45,7 @@ class AuthControllerRegisterIntegrationTest extends DatabaseConfigTests {
 
   @Test
   @DisplayName("Valid registration: user registers with all fields")
-  void givenRegisterRequest_whenDataHasAllFields_thenCreateUserShouldSucceedAndUserShouldPersist()
+  void givenDataWithAllFields_whenRegisteringUser_thenCreateUserShouldSucceedAndUserShouldPersist()
       throws Exception {
     String requestJson = this.readJson("valid_allFields.json");
 
@@ -69,7 +69,7 @@ class AuthControllerRegisterIntegrationTest extends DatabaseConfigTests {
 
   @Test
   @DisplayName("Valid registration: user registers with required fields")
-  void givenRegisterRequest_whenDataHasRequiredFieldsOnly_thenCreateUserShouldSucceedAndUserShouldPersist()
+  void givenDataWithRequiredFieldsOnly_whenRegisteringUser_thenCreateUserShouldSucceedAndUserShouldPersist()
       throws Exception {
     String requestJson = this.readJson("valid_requiredFields.json");
 
@@ -93,7 +93,7 @@ class AuthControllerRegisterIntegrationTest extends DatabaseConfigTests {
 
   @Test
   @DisplayName("Invalid registration: error dateOfBirth < 18")
-  void givenRegisterRequest_whenDataIsNotValid_thenCreateUserShouldFail() throws Exception {
+  void givenInvalidDateOfBirth_whenRegisteringUser_thenDtoValidationShouldThrow() throws Exception {
     String requestJson = this.readJson("invalid_dateOfBirth.json");
 
     // Test endpoint validation
@@ -113,7 +113,7 @@ class AuthControllerRegisterIntegrationTest extends DatabaseConfigTests {
 
   @Test
   @DisplayName("Invalid registration: missing fields")
-  void givenRegisterRequest_whenDataIsMissingField_thenCreateUserShouldFail() throws Exception {
+  void givenDataWithMissingFields_whenRegisteringUser_thenCreateUserShouldFail() throws Exception {
     String requestJson = this.readJson("invalid_missingFields.json");
 
     // Test endpoint validation
