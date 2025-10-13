@@ -4,7 +4,7 @@ on:
   push:
     branches: [ development, 'feat/**' ]
   pull_request:
-    branches: [ main, development ]
+    branches: [ development ]
     types: [opened, synchronize, reopened]
 
 jobs:
@@ -30,14 +30,6 @@ jobs:
           key: ${{ runner.os }}-m2-${{ hashFiles('**/pom.xml') }}
           restore-keys: ${{ runner.os }}-m2
 
-      - name: Cache SonarQube packages
-        if: ${{ github.ref == 'refs/heads/main' }}
-        uses: actions/cache@v4
-        with:
-          path: ~/.sonar/cache
-          key: ${{ runner.os }}-sonar
-          restore-keys: ${{ runner.os }}-sonar
-
       - name: Compile the project
         run: mvn -B clean compile
 
@@ -45,14 +37,7 @@ jobs:
         run: mvn -B test
 
       - name: Run verify
-        if: ${{ github.ref != 'refs/heads/main' }}
         run: mvn -B --update-snapshots verify
-
-      - name: Quality Analyze with SonarQube
-        if: ${{ github.ref == 'refs/heads/main' }}
-        env:
-          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
-        run: mvn -B verify org.sonarsource.scanner.maven:sonar-maven-plugin:sonar -Dsonar.projectKey=mlangumier_electricity-business-backend
 
       - name: Upload tests report
         uses: actions/upload-artifact@v4
