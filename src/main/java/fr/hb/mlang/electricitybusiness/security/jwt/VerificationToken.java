@@ -14,6 +14,10 @@ public final class VerificationToken {
 
   private static final SecureRandom RNG = new SecureRandom();
 
+  private VerificationToken() {
+    // Hide implicit constructor
+  }
+
   /**
    * Generates a token that will be shared to the user via email links url (email verification &
    * password reset).

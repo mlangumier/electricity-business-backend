@@ -8,6 +8,10 @@ public class CookieUtil {
 
   private static AppProperties appProperties;
 
+  private CookieUtil() {
+    // Hide implicit constructor
+  }
+
   /**
    * Creates a cookie with the refresh token, to be sent to the user's device.
    *

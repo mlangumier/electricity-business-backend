@@ -29,7 +29,7 @@ import org.springframework.test.web.servlet.MockMvc;
 @SpringBootTest(webEnvironment = WebEnvironment.MOCK)
 @AutoConfigureMockMvc
 @AutoConfigureTestDatabase(replace = Replace.NONE) // Keep TestContainers datasource
-public class AuthControllerRegisterIntegrationTest extends DatabaseConfigTests {
+class AuthControllerRegisterIntegrationTest extends DatabaseConfigTests {
 
   @Autowired
   private MockMvc mockMvc;
