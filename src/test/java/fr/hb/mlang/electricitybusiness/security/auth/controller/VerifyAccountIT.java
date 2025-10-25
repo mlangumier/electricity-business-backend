@@ -4,7 +4,7 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
-import fr.hb.mlang.electricitybusiness.config.DatabaseConfigTests;
+import fr.hb.mlang.electricitybusiness.config.DatabaseConfigIT;
 import fr.hb.mlang.electricitybusiness.modules.tokens.email.EmailVerificationToken;
 import fr.hb.mlang.electricitybusiness.modules.tokens.email.EmailVerificationTokenRepository;
 import fr.hb.mlang.electricitybusiness.modules.user.domain.User;
@@ -36,7 +36,7 @@ import org.springframework.test.web.servlet.MockMvc;
 @SpringBootTest(webEnvironment = WebEnvironment.MOCK)
 @AutoConfigureMockMvc
 @AutoConfigureTestDatabase(replace = Replace.NONE)
-public class VerifyAccountIntegrationTest extends DatabaseConfigTests {
+public class VerifyAccountIT extends DatabaseConfigIT {
 
   @Autowired
   private MockMvc mockMvc;

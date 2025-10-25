@@ -5,7 +5,7 @@ import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
-import fr.hb.mlang.electricitybusiness.config.DatabaseConfigTests;
+import fr.hb.mlang.electricitybusiness.config.DatabaseConfigIT;
 import fr.hb.mlang.electricitybusiness.modules.user.domain.User;
 import fr.hb.mlang.electricitybusiness.modules.user.repository.UserRepository;
 import fr.hb.mlang.electricitybusiness.utils.JsonTestUtil;
@@ -29,7 +29,7 @@ import org.springframework.test.web.servlet.MockMvc;
 @SpringBootTest(webEnvironment = WebEnvironment.MOCK)
 @AutoConfigureMockMvc
 @AutoConfigureTestDatabase(replace = Replace.NONE) // Keep TestContainers datasource
-public class RegisterAccountIntegrationTest extends DatabaseConfigTests {
+public class RegisterAccountIT extends DatabaseConfigIT {
 
   @Autowired
   private MockMvc mockMvc;
