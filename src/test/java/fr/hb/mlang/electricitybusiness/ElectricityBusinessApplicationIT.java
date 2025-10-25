@@ -1,13 +1,13 @@
 package fr.hb.mlang.electricitybusiness;
 
-import fr.hb.mlang.electricitybusiness.config.DatabaseConfigTests;
+import fr.hb.mlang.electricitybusiness.config.DatabaseConfigIT;
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.ActiveProfiles;
 
-@SpringBootTest
 @ActiveProfiles("test")
-class ElectricityBusinessApplicationTests extends DatabaseConfigTests {
+@SpringBootTest
+class ElectricityBusinessApplicationIT extends DatabaseConfigIT {
 
   @Test
   void contextLoads() {
