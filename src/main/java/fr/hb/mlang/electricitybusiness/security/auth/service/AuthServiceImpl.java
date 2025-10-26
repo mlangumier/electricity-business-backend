@@ -11,10 +11,9 @@ import fr.hb.mlang.electricitybusiness.security.auth.SecurityUserDetails;
 import fr.hb.mlang.electricitybusiness.security.auth.controller.dto.EmailAvailableRequest;
 import fr.hb.mlang.electricitybusiness.security.auth.controller.dto.RegisterRequest;
 import fr.hb.mlang.electricitybusiness.security.auth.exception.EmailAlreadyInUseException;
-import fr.hb.mlang.electricitybusiness.security.auth.exception.ExpiredTokenException;
+import fr.hb.mlang.electricitybusiness.security.auth.exception.EmailVerificationTokenException;
 import fr.hb.mlang.electricitybusiness.security.auth.exception.UserAlreadyVerifiedException;
 import fr.hb.mlang.electricitybusiness.security.jwt.VerificationToken;
-import jakarta.persistence.EntityNotFoundException;
 import jakarta.transaction.Transactional;
 import java.time.Instant;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -88,7 +87,7 @@ public class AuthServiceImpl implements AuthService {
     // Save user with default relationships
     userRepository.save(user);
 
-    // TODO: on success -> Send email (with rawToken) & OK
+    // TODO: on success -> Send email (with rawToken)
   }
 
   @Override
@@ -98,11 +97,10 @@ public class AuthServiceImpl implements AuthService {
 
     EmailVerificationToken tokenEntity = emailTokenRepository
         .findByTokenHash(tokenHash)
-        .orElseThrow(() -> new EntityNotFoundException("Couldn't find email verification token"));
+        .orElseThrow(() -> new EmailVerificationTokenException("Could not find email verification token."));
 
     if (tokenEntity.getExpiresAt().isBefore(Instant.now())) {
-      throw new ExpiredTokenException(
-          "Email verification token is expired: " + tokenEntity.getExpiresAt());
+      throw new EmailVerificationTokenException("Email verification token is expired.");
     }
 
     // Use our adapter to handle data from both User & UserAuth

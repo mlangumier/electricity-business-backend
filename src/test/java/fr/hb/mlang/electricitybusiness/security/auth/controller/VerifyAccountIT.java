@@ -1,7 +1,6 @@
 package fr.hb.mlang.electricitybusiness.security.auth.controller;
 
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 import fr.hb.mlang.electricitybusiness.config.DatabaseConfigIT;
@@ -53,15 +52,11 @@ public class VerifyAccountIT extends DatabaseConfigIT {
     emailRepository.deleteAll();
   }
 
-  //ERROR
-  // Error running 'VerifyAccountIntegrationTest'
-  // Failed to resolve org.junit.vintage:junit-vintage-engine:5.12.2
-
   @Test
   @DisplayName("Valid account verification")
   void givenValidVerificationToken_whenVerifyingAccount_thenVerificationShouldSucceed()
       throws Exception {
-    Seed seed = this.seedUnverifiedUser("test@test.com", 5);
+    Seed seed = this.seedUnverifiedUser(5, ChronoUnit.MINUTES);
 
     mockMvc
         .perform(get("/api/v1/verify-account")
@@ -83,8 +78,9 @@ public class VerifyAccountIT extends DatabaseConfigIT {
   // Test: already verified
   @Test
   @DisplayName("Invalid - Already verified")
-  void givenAlreadyVerifiedUser_whenVerifyingAccount_thenVerificationShouldFail() throws Exception {
-    Seed seed = this.seedUnverifiedUser("test@test.com", 5);
+  void givenAlreadyVerifiedUser_whenVerifyingAccount_thenShouldThrowUserAlreadyVerifiedException()
+      throws Exception {
+    Seed seed = this.seedUnverifiedUser(5, ChronoUnit.MINUTES);
 
     // Manually verify the user
     seed.user.getAuth().setEmailVerified(true);
@@ -96,51 +92,55 @@ public class VerifyAccountIT extends DatabaseConfigIT {
     Assertions.assertTrue(user.getAuth().getEmailVerified());
     Assertions.assertNull(user.getEmailVerificationToken());
 
-    // Verify the user and expect it to fail
+    // Test - Verify the user and expect it to fail (token not found)
     mockMvc
-        .perform(post("/api/v1/verify-account")
+        .perform(get("/api/v1/verify-account")
             .param("token", seed.rawToken)
             .accept(MediaType.APPLICATION_JSON))
-        .andExpect(status().isBadRequest()); //ERROR: returns a 405
+        .andExpect(status().isNotFound());
   }
 
   @Test
   @DisplayName("Invalid - Expired token")
-  void givenExpiredToken_whenVerifyingAccount_thenVerificationShouldFail() throws Exception {
-    Seed seed = this.seedUnverifiedUser("test@test.com", 0);
+  void givenExpiredToken_whenVerifyingAccount_thenShouldThrowExpiredException() throws Exception {
+    Seed seed = this.seedUnverifiedUser(1, ChronoUnit.SECONDS);
 
+    Thread.sleep(1100);
     mockMvc
-        .perform(post("/api/v1/verify-account")
+        .perform(get("/api/v1/verify-account")
             .param("token", seed.rawToken)
             .accept(MediaType.APPLICATION_JSON))
-        .andExpect(status().isBadRequest());
+        .andExpect(status().isNotFound());
 
-    EmailVerificationToken emailToken = emailRepository.findById(seed.emailToken().getId()).orElseThrow();
+    EmailVerificationToken emailToken = emailRepository
+        .findById(seed.emailToken.getId())
+        .orElseThrow();
     Assertions.assertFalse(emailToken.getExpiresAt().isAfter(Instant.now()));
-    //ERROR (assert): ConstraintViolationImpl{interpolatedMessage='doit être une date dans le futur', propertyPath=expiresAt
   }
 
   @Test
   @DisplayName("Invalid - Unknown token")
-  void givenUnknownToken_whenVerifyingAccount_thenVerificationShouldFail() throws Exception {
-    Seed seed = this.seedUnverifiedUser("test@test.com", 5);
+  void givenUnknownToken_whenVerifyingAccount_thenShouldThrowInvalidTokenException()
+      throws Exception {
+    Seed seed = this.seedUnverifiedUser(5, ChronoUnit.MINUTES);
     String invalidToken = seed.rawToken() + "0";
 
-    mockMvc.perform(post("/api/v1/verify-account")
+    mockMvc.perform(get("/api/v1/verify-account")
             .param("token", invalidToken)
             .accept(MediaType.APPLICATION_JSON))
-        .andExpect(status().isBadRequest());
+        .andExpect(status().isNotFound());
 
-    EmailVerificationToken emailToken = emailRepository.findById(seed.emailToken().getId()).orElseThrow();
+    EmailVerificationToken emailToken = emailRepository
+        .findById(seed.emailToken.getId())
+        .orElseThrow();
     Assertions.assertNotEquals(emailToken.getTokenHash(), invalidToken);
   }
-
 
   /**
    * Create a fake user for testing
    */
-  private Seed seedUnverifiedUser(String email, Integer expiresInMins) {
-    User user = new User(email, null);
+  private Seed seedUnverifiedUser(int expirationTime, ChronoUnit unit) {
+    User user = new User("test@test.com", null);
     user.setAuth(new UserAuth(encoder.encode("password")));
     user.setProfile(new UserProfile(
         "Test",
@@ -152,7 +152,7 @@ public class VerifyAccountIT extends DatabaseConfigIT {
     String generatedToken = VerificationToken.hashToken(rawToken);
     user.setEmailVerificationToken(new EmailVerificationToken(
         generatedToken,
-        Instant.now().plus(expiresInMins, ChronoUnit.MINUTES)
+        Instant.now().plus(expirationTime, unit)
     ));
     userRepository.save(user);
 
