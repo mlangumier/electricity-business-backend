@@ -53,7 +53,6 @@ public class AuthController {
   @PostMapping("/auth/login")
   public ResponseEntity<LoginResponseDto> login(@Valid @RequestBody LoginRequestDto credentials, HttpServletResponse response) {
     LoginResponseDto responseDto = authService.authenticateUser(credentials, response);
-
     return ResponseEntity.status(HttpStatus.OK).body(responseDto);
   }
 

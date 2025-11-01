@@ -22,7 +22,7 @@ public class CookieUtil {
     return ResponseCookie
         .from("refreshToken", token)
         .httpOnly(true)
-        .secure(false)
+        .secure(false) // Update to `true` after setting up HTTPS environments & for deployment
         .path("/api/v1/auth")
         .sameSite(SameSiteCookies.NONE.toString())
         .maxAge(appProperties.jwt().refreshExpiration())

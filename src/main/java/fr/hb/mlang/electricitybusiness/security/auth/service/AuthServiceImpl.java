@@ -4,6 +4,7 @@ import fr.hb.mlang.electricitybusiness.config.AppProperties;
 import fr.hb.mlang.electricitybusiness.modules.tokens.email.EmailVerificationToken;
 import fr.hb.mlang.electricitybusiness.modules.tokens.email.EmailVerificationTokenRepository;
 import fr.hb.mlang.electricitybusiness.modules.tokens.refresh.RefreshToken;
+import fr.hb.mlang.electricitybusiness.modules.tokens.refresh.RefreshTokenRepository;
 import fr.hb.mlang.electricitybusiness.modules.user.domain.User;
 import fr.hb.mlang.electricitybusiness.modules.user.domain.UserAuth;
 import fr.hb.mlang.electricitybusiness.modules.user.repository.UserRepository;
@@ -34,6 +35,7 @@ public class AuthServiceImpl implements AuthService {
 
   private final UserRepository userRepository;
   private final EmailVerificationTokenRepository emailTokenRepository;
+  private final RefreshTokenRepository refreshTokenRepository;
   private final PasswordEncoder encoder;
   private final AppProperties.Jwt jwtProps;
   private final JwtService jwtService;
@@ -42,6 +44,7 @@ public class AuthServiceImpl implements AuthService {
   public AuthServiceImpl(
       UserRepository userRepository,
       EmailVerificationTokenRepository emailTokenRepository,
+      RefreshTokenRepository refreshTokenRepository,
       PasswordEncoder encoder,
       AppProperties appProps,
       JwtService jwtService,
@@ -49,6 +52,7 @@ public class AuthServiceImpl implements AuthService {
   ) {
     this.userRepository = userRepository;
     this.emailTokenRepository = emailTokenRepository;
+    this.refreshTokenRepository = refreshTokenRepository;
     this.encoder = encoder;
     this.jwtProps = appProps.jwt();
     this.jwtService = jwtService;
@@ -135,6 +139,7 @@ public class AuthServiceImpl implements AuthService {
     //TODO: send welcome email with link to login page (& optional: short description of available features)
   }
 
+  @Transactional
   @Override
   public LoginResponseDto authenticateUser(
       LoginRequestDto credentials,
@@ -146,7 +151,6 @@ public class AuthServiceImpl implements AuthService {
     ));
 
     SecurityUserDetails userDetails = (SecurityUserDetails) authentication.getPrincipal();
-
     // Ideally: if the user has a token for the same device, remove it and add the new token instead.
 
     // Generate refresh token & set cookie in response headers
@@ -154,12 +158,15 @@ public class AuthServiceImpl implements AuthService {
         jwtService.generateRefreshToken(userDetails.getUsername()),
         Instant.now().plus(jwtProps.refreshExpiration())
     );
-    userDetails.user().addRefreshToken(refreshToken);
-    userRepository.save(userDetails.user());
+    refreshToken.setUser(userDetails.user());
+    refreshTokenRepository.save(refreshToken);
+
+    //userDetails.user().addRefreshToken(refreshToken);
+    //userRepository.save(userDetails.user());
 
     response.addHeader(
         HttpHeaders.SET_COOKIE,
-        CookieUtil.createRefreshTokenCookie(refreshToken.getTokenHash()).toString()
+        CookieUtil.createRefreshTokenCookie(refreshToken.getTokenHash()).toString() //ERROR: cannot invoque because "CookieUtil.appProperties" is null
     );
 
     // Generate accessToken & return response
@@ -172,7 +179,6 @@ public class AuthServiceImpl implements AuthService {
             userDetails.user().getId(),
             userDetails.getUsername(),
             userDetails.user().getRole(),
-            userDetails.isEnabled(),
             userDetails.user().getProfile().getFirstName(),
             userDetails.user().getProfile().getLastName(),
             userDetails.user().getProfile().getAvatar(),

@@ -12,7 +12,6 @@ public record LoginResponseDto(
       UUID id,
       String email,
       Role role,
-      boolean emailVerified,
       String firstName,
       String lastName,
       String avatar,

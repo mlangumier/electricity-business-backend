@@ -216,6 +216,7 @@ public class User extends AuditedEntity {
     booking.setCustomer(null);
   }
 
+  //TODO: remove this add() method?
   public void addRefreshToken(RefreshToken refreshToken) {
     if (refreshToken == null) {
       return;
