@@ -27,6 +27,7 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
+import org.springframework.security.crypto.argon2.Argon2PasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
@@ -37,6 +38,7 @@ public class AuthServiceImpl implements AuthService {
   private final EmailVerificationTokenRepository emailTokenRepository;
   private final RefreshTokenRepository refreshTokenRepository;
   private final PasswordEncoder encoder;
+  private final Argon2PasswordEncoder argon2PasswordEncoder;
   private final AppProperties.Jwt jwtProps;
   private final JwtService jwtService;
   private final AuthenticationManager authManager;
@@ -46,6 +48,7 @@ public class AuthServiceImpl implements AuthService {
       EmailVerificationTokenRepository emailTokenRepository,
       RefreshTokenRepository refreshTokenRepository,
       PasswordEncoder encoder,
+      Argon2PasswordEncoder argon2PasswordEncoder,
       AppProperties appProps,
       JwtService jwtService,
       AuthenticationManager authManager
@@ -54,6 +57,7 @@ public class AuthServiceImpl implements AuthService {
     this.emailTokenRepository = emailTokenRepository;
     this.refreshTokenRepository = refreshTokenRepository;
     this.encoder = encoder;
+    this.argon2PasswordEncoder = argon2PasswordEncoder;
     this.jwtProps = appProps.jwt();
     this.jwtService = jwtService;
     this.authManager = authManager;
@@ -154,19 +158,19 @@ public class AuthServiceImpl implements AuthService {
     // Ideally: if the user has a token for the same device, remove it and add the new token instead.
 
     // Generate refresh token & set cookie in response headers
+    String rawRefreshToken = jwtService.generateRefreshToken(userDetails.getUsername());
+    String hashRefrestoken = argon2PasswordEncoder.encode(rawRefreshToken);
     RefreshToken refreshToken = new RefreshToken(
-        jwtService.generateRefreshToken(userDetails.getUsername()),
+        hashRefrestoken,
         Instant.now().plus(jwtProps.refreshExpiration())
     );
     refreshToken.setUser(userDetails.user());
-    refreshTokenRepository.save(refreshToken);
-
-    //userDetails.user().addRefreshToken(refreshToken);
-    //userRepository.save(userDetails.user());
 
     response.addHeader(
         HttpHeaders.SET_COOKIE,
-        CookieUtil.createRefreshTokenCookie(refreshToken.getTokenHash()).toString() //ERROR: cannot invoque because "CookieUtil.appProperties" is null
+        CookieUtil
+            .createRefreshTokenCookie(rawRefreshToken, jwtProps.refreshExpiration())
+            .toString()
     );
 
     // Generate accessToken & return response

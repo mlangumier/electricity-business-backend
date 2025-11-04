@@ -33,7 +33,7 @@ import org.springframework.test.web.servlet.result.MockMvcResultMatchers;
 @SpringBootTest(webEnvironment = WebEnvironment.MOCK)
 @AutoConfigureMockMvc
 @AutoConfigureTestDatabase(replace = Replace.NONE)
-public class LoginIT extends DatabaseConfigIT {
+class LoginIT extends DatabaseConfigIT {
 
   @Autowired
   private MockMvc mockMvc;
