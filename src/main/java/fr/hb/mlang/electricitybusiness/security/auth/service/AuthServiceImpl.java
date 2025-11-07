@@ -27,6 +27,7 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.argon2.Argon2PasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -153,8 +154,12 @@ public class AuthServiceImpl implements AuthService {
         credentials.email(),
         credentials.password()
     ));
+    System.out.println(">> Authentication: " + authentication.toString());
+    SecurityContextHolder.getContext().setAuthentication(authentication);
 
     SecurityUserDetails userDetails = (SecurityUserDetails) authentication.getPrincipal();
+    System.out.println(">> SecurityUserDetails: " + userDetails.toString());
+    User user = getUser(userDetails);
     // Ideally: if the user has a token for the same device, remove it and add the new token instead.
 
     // Generate refresh token & set cookie in response headers
@@ -164,7 +169,10 @@ public class AuthServiceImpl implements AuthService {
         hashRefrestoken,
         Instant.now().plus(jwtProps.refreshExpiration())
     );
-    refreshToken.setUser(userDetails.user());
+    refreshToken.setUser(user);
+    //user.getRefreshTokens().add(refreshToken);
+    user.getAuth().setLastLogin(Instant.now());
+    userRepository.save(user);
 
     response.addHeader(
         HttpHeaders.SET_COOKIE,
@@ -180,14 +188,18 @@ public class AuthServiceImpl implements AuthService {
     return new LoginResponseDto(
         accessToken,
         new LoginResponseDto.UserAuth(
-            userDetails.user().getId(),
+            user.getId(),
             userDetails.getUsername(),
-            userDetails.user().getRole(),
-            userDetails.user().getProfile().getFirstName(),
-            userDetails.user().getProfile().getLastName(),
-            userDetails.user().getProfile().getAvatar(),
-            userDetails.user().getProfile().getPreferences()
+            user.getRole(),
+            user.getProfile().getFirstName(),
+            user.getProfile().getLastName(),
+            user.getProfile().getAvatar(),
+            user.getProfile().getPreferences()
         )
     );
+  }
+
+  private static User getUser(SecurityUserDetails userDetails) {
+    return userDetails.user();
   }
 }

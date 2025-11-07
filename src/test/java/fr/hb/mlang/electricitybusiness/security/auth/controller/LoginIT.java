@@ -1,13 +1,18 @@
 package fr.hb.mlang.electricitybusiness.security.auth.controller;
 
 import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.springframework.security.test.web.servlet.response.SecurityMockMvcResultMatchers.authenticated;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.cookie;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import fr.hb.mlang.electricitybusiness.config.DatabaseConfigIT;
 import fr.hb.mlang.electricitybusiness.modules.tokens.email.EmailVerificationToken;
 import fr.hb.mlang.electricitybusiness.modules.user.domain.User;
 import fr.hb.mlang.electricitybusiness.modules.user.domain.UserAuth;
 import fr.hb.mlang.electricitybusiness.modules.user.repository.UserRepository;
 import fr.hb.mlang.electricitybusiness.modules.userprofile.UserProfile;
+import fr.hb.mlang.electricitybusiness.security.auth.controller.dto.LoginResponseDto;
 import fr.hb.mlang.electricitybusiness.security.jwt.VerificationToken;
 import fr.hb.mlang.electricitybusiness.utils.JsonTestUtil;
 import java.io.IOException;
@@ -24,11 +29,11 @@ import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabas
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.context.SpringBootTest.WebEnvironment;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
-import org.springframework.test.web.servlet.result.MockMvcResultMatchers;
 
 @SpringBootTest(webEnvironment = WebEnvironment.MOCK)
 @AutoConfigureMockMvc
@@ -41,6 +46,8 @@ class LoginIT extends DatabaseConfigIT {
   PasswordEncoder encoder;
   @Autowired
   UserRepository userRepository;
+  @Autowired
+  private ObjectMapper objectMapper;
 
   @BeforeEach
   void setup() {
@@ -71,19 +78,29 @@ class LoginIT extends DatabaseConfigIT {
     String response = mockMvc.perform(MockMvcRequestBuilders.post("/api/v1/auth/login")
             .contentType(MediaType.APPLICATION_JSON)
             .content(requestJson))
-        .andExpect(MockMvcResultMatchers.status().isOk())
+        //.with(csrf())) //Add when implemented
+        .andExpect(status().isOk())
+        .andExpect(authenticated().withUsername("user@test.com")) //ERROR: "Authentication should not be null"
+        .andExpect(cookie().exists("refreshToken"))
+        .andExpect(cookie().httpOnly("refreshToken", true))
         .andReturn()
         .getResponse()
         .getContentAsString();
 
-    // Assert response status
     assertNotNull(response, "Response should not be null");
-    // Assert userDto
-    //assertNotNull(response.accessToken);
-    //assertNotNull(response.user);
 
-    // Get & assert refreshToken entity
-    // Get user & assert last login
+    LoginResponseDto responseDto = objectMapper.readValue(response, LoginResponseDto.class);
+
+    assertNotNull(responseDto.accessToken(), "AccessToken should not be null");
+
+    User user = userRepository.findByEmail(responseDto.userAuth().email()).orElseThrow();
+    assertNotNull(user);
+
+    assertNotNull(user.getAuth().getLastLogin());
+    assert (user.getAuth().getLastLogin()).isAfter(Instant.now().minus(5, ChronoUnit.MINUTES));
+    assert (user.getAuth().getLastLogin()).isBefore(Instant.now());
+
+    //TODO: Assert expected response <- set JsonTestHelper method to ignore IDs & dynamic
   }
 
 

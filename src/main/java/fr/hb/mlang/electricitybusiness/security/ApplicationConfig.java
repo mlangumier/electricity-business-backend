@@ -7,6 +7,8 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Primary;
 import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.authentication.AuthenticationProvider;
+import org.springframework.security.authentication.dao.DaoAuthenticationProvider;
 import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
@@ -17,13 +19,19 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 @Configuration
 public class ApplicationConfig {
 
-  private final AuthenticationConfiguration authConfig;
   private final UserRepository userRepository;
 
-  public ApplicationConfig(AuthenticationConfiguration authConfig, UserRepository userRepository) {
-    this.authConfig = authConfig;
+  public ApplicationConfig(UserRepository userRepository) {
     this.userRepository = userRepository;
   }
+
+  //@Bean
+  //public AuthenticationProvider authenticationProvider() {
+  //  DaoAuthenticationProvider authProvider = new DaoAuthenticationProvider();
+  //  authProvider.setUserDetailsService(this.userDetailsService());
+  //  authProvider.setPasswordEncoder(this.bCryptPasswordEncoder());
+  //  return authProvider;
+  //}
 
   /**
    * Authenticates the user with their credentials (username & password).
@@ -31,7 +39,7 @@ public class ApplicationConfig {
    * @return the authenticated user.
    */
   @Bean
-  public AuthenticationManager getAuthenticationManager() throws Exception {
+  public AuthenticationManager authenticationManager(AuthenticationConfiguration authConfig) throws Exception {
     return authConfig.getAuthenticationManager();
   }
 
@@ -44,7 +52,7 @@ public class ApplicationConfig {
   public UserDetailsService userDetailsService() {
     return username -> userRepository
         .findByEmail(username)
-        .map(SecurityUserDetails::from)
+        .map(SecurityUserDetails::from) //WARNING: could this be the issue?
         .orElseThrow(() -> new UsernameNotFoundException(
             "Couldn't find user with email: " + username));
   }
