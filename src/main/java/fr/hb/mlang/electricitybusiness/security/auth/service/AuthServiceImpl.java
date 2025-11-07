@@ -4,13 +4,13 @@ import fr.hb.mlang.electricitybusiness.config.AppProperties;
 import fr.hb.mlang.electricitybusiness.modules.tokens.email.EmailVerificationToken;
 import fr.hb.mlang.electricitybusiness.modules.tokens.email.EmailVerificationTokenRepository;
 import fr.hb.mlang.electricitybusiness.modules.tokens.refresh.RefreshToken;
-import fr.hb.mlang.electricitybusiness.modules.tokens.refresh.RefreshTokenRepository;
 import fr.hb.mlang.electricitybusiness.modules.user.domain.User;
 import fr.hb.mlang.electricitybusiness.modules.user.domain.UserAuth;
 import fr.hb.mlang.electricitybusiness.modules.user.repository.UserRepository;
 import fr.hb.mlang.electricitybusiness.modules.userprofile.UserProfile;
 import fr.hb.mlang.electricitybusiness.security.CookieUtil;
 import fr.hb.mlang.electricitybusiness.security.auth.SecurityUserDetails;
+import fr.hb.mlang.electricitybusiness.security.auth.controller.AuthMapper;
 import fr.hb.mlang.electricitybusiness.security.auth.controller.dto.EmailAvailableRequest;
 import fr.hb.mlang.electricitybusiness.security.auth.controller.dto.LoginRequestDto;
 import fr.hb.mlang.electricitybusiness.security.auth.controller.dto.LoginResponseDto;
@@ -27,7 +27,6 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
-import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.argon2.Argon2PasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -37,31 +36,31 @@ public class AuthServiceImpl implements AuthService {
 
   private final UserRepository userRepository;
   private final EmailVerificationTokenRepository emailTokenRepository;
-  private final RefreshTokenRepository refreshTokenRepository;
   private final PasswordEncoder encoder;
   private final Argon2PasswordEncoder argon2PasswordEncoder;
   private final AppProperties.Jwt jwtProps;
   private final JwtService jwtService;
   private final AuthenticationManager authManager;
+  private final AuthMapper mapper;
 
   public AuthServiceImpl(
       UserRepository userRepository,
       EmailVerificationTokenRepository emailTokenRepository,
-      RefreshTokenRepository refreshTokenRepository,
       PasswordEncoder encoder,
       Argon2PasswordEncoder argon2PasswordEncoder,
       AppProperties appProps,
       JwtService jwtService,
-      AuthenticationManager authManager
+      AuthenticationManager authManager,
+      AuthMapper mapper
   ) {
     this.userRepository = userRepository;
     this.emailTokenRepository = emailTokenRepository;
-    this.refreshTokenRepository = refreshTokenRepository;
     this.encoder = encoder;
     this.argon2PasswordEncoder = argon2PasswordEncoder;
     this.jwtProps = appProps.jwt();
     this.jwtService = jwtService;
     this.authManager = authManager;
+    this.mapper = mapper;
   }
 
   @Override
@@ -154,23 +153,19 @@ public class AuthServiceImpl implements AuthService {
         credentials.email(),
         credentials.password()
     ));
-    System.out.println(">> Authentication: " + authentication.toString());
-    SecurityContextHolder.getContext().setAuthentication(authentication);
 
     SecurityUserDetails userDetails = (SecurityUserDetails) authentication.getPrincipal();
-    System.out.println(">> SecurityUserDetails: " + userDetails.toString());
-    User user = getUser(userDetails);
+    User user = userRepository.findByEmail(userDetails.getUsername()).orElseThrow();
     // Ideally: if the user has a token for the same device, remove it and add the new token instead.
 
     // Generate refresh token & set cookie in response headers
     String rawRefreshToken = jwtService.generateRefreshToken(userDetails.getUsername());
-    String hashRefrestoken = argon2PasswordEncoder.encode(rawRefreshToken);
+    String hashRefreshtoken = argon2PasswordEncoder.encode(rawRefreshToken);
     RefreshToken refreshToken = new RefreshToken(
-        hashRefrestoken,
+        hashRefreshtoken,
         Instant.now().plus(jwtProps.refreshExpiration())
     );
-    refreshToken.setUser(user);
-    //user.getRefreshTokens().add(refreshToken);
+    user.addRefreshToken(refreshToken);
     user.getAuth().setLastLogin(Instant.now());
     userRepository.save(user);
 
@@ -184,22 +179,6 @@ public class AuthServiceImpl implements AuthService {
     // Generate accessToken & return response
     String accessToken = jwtService.generateAccessToken(userDetails.getUsername());
 
-    // Move to AuthMapper if reused later
-    return new LoginResponseDto(
-        accessToken,
-        new LoginResponseDto.UserAuth(
-            user.getId(),
-            userDetails.getUsername(),
-            user.getRole(),
-            user.getProfile().getFirstName(),
-            user.getProfile().getLastName(),
-            user.getProfile().getAvatar(),
-            user.getProfile().getPreferences()
-        )
-    );
-  }
-
-  private static User getUser(SecurityUserDetails userDetails) {
-    return userDetails.user();
+    return mapper.toLoginResponseDto(accessToken, user);
   }
 }

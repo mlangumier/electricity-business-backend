@@ -5,10 +5,10 @@ import java.util.UUID;
 
 public record LoginResponseDto(
     String accessToken,
-    UserAuth userAuth
+    User user
     ) {
 
-  public record UserAuth (
+  public record User (
       UUID id,
       String email,
       Role role,

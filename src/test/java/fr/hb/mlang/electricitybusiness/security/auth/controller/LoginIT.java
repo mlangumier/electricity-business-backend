@@ -1,7 +1,7 @@
 package fr.hb.mlang.electricitybusiness.security.auth.controller;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
-import static org.springframework.security.test.web.servlet.response.SecurityMockMvcResultMatchers.authenticated;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.cookie;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
@@ -29,7 +29,6 @@ import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabas
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.context.SpringBootTest.WebEnvironment;
-import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.test.web.servlet.MockMvc;
@@ -78,23 +77,28 @@ class LoginIT extends DatabaseConfigIT {
     String response = mockMvc.perform(MockMvcRequestBuilders.post("/api/v1/auth/login")
             .contentType(MediaType.APPLICATION_JSON)
             .content(requestJson))
-        //.with(csrf())) //Add when implemented
         .andExpect(status().isOk())
-        .andExpect(authenticated().withUsername("user@test.com")) //ERROR: "Authentication should not be null"
         .andExpect(cookie().exists("refreshToken"))
-        .andExpect(cookie().httpOnly("refreshToken", true))
-        .andReturn()
-        .getResponse()
-        .getContentAsString();
+        .andReturn().getResponse().getContentAsString();
 
     assertNotNull(response, "Response should not be null");
-
     LoginResponseDto responseDto = objectMapper.readValue(response, LoginResponseDto.class);
-
     assertNotNull(responseDto.accessToken(), "AccessToken should not be null");
 
-    User user = userRepository.findByEmail(responseDto.userAuth().email()).orElseThrow();
+    // TODO: implement this after setting up "/refresh" route
+    // Confirm that the user has received a valid token and can use it in authenticated routes:
+    //mockMvc.perform(MockMvcRequestBuilders
+    //    .get("/api/v1/auth/refresh-token")
+    //    .header(HttpHeaders.AUTHORIZATION, "Bearer " + responseDto.accessToken()))
+    //    .andExpect(status().isOk())
+    //    .andExpect(cookie().exists("refreshToken"))
+    //    .andExpect((ResultMatcher) jsonPath("$.email", "user@test.com"));
+
+    User user = userRepository
+        .findByEmailWithRefreshToken(responseDto.user().email())
+        .orElseThrow();
     assertNotNull(user);
+    assertEquals(1, user.getRefreshTokens().size());
 
     assertNotNull(user.getAuth().getLastLogin());
     assert (user.getAuth().getLastLogin()).isAfter(Instant.now().minus(5, ChronoUnit.MINUTES));

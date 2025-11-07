@@ -7,8 +7,6 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Primary;
 import org.springframework.security.authentication.AuthenticationManager;
-import org.springframework.security.authentication.AuthenticationProvider;
-import org.springframework.security.authentication.dao.DaoAuthenticationProvider;
 import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
@@ -25,21 +23,14 @@ public class ApplicationConfig {
     this.userRepository = userRepository;
   }
 
-  //@Bean
-  //public AuthenticationProvider authenticationProvider() {
-  //  DaoAuthenticationProvider authProvider = new DaoAuthenticationProvider();
-  //  authProvider.setUserDetailsService(this.userDetailsService());
-  //  authProvider.setPasswordEncoder(this.bCryptPasswordEncoder());
-  //  return authProvider;
-  //}
-
   /**
    * Authenticates the user with their credentials (username & password).
    *
    * @return the authenticated user.
    */
   @Bean
-  public AuthenticationManager authenticationManager(AuthenticationConfiguration authConfig) throws Exception {
+  public AuthenticationManager authenticationManager(AuthenticationConfiguration authConfig)
+      throws Exception {
     return authConfig.getAuthenticationManager();
   }
 
@@ -52,7 +43,7 @@ public class ApplicationConfig {
   public UserDetailsService userDetailsService() {
     return username -> userRepository
         .findByEmail(username)
-        .map(SecurityUserDetails::from) //WARNING: could this be the issue?
+        .map(SecurityUserDetails::from)
         .orElseThrow(() -> new UsernameNotFoundException(
             "Couldn't find user with email: " + username));
   }

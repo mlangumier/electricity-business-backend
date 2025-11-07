@@ -6,7 +6,6 @@ import java.time.Duration;
 import java.util.List;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.security.authentication.AuthenticationProvider;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
@@ -23,14 +22,10 @@ public class SecurityConfig {
 
   private final AppProperties appProperties;
   private final JwtAuthenticationFilter jwtAuthFilter;
-  //private final AuthenticationProvider authenticationProvider;
 
-  public SecurityConfig(JwtAuthenticationFilter jwtAuthFilter, AppProperties appProperties
-      //AuthenticationProvider authenticationProvider
-  ) {
+  public SecurityConfig(JwtAuthenticationFilter jwtAuthFilter, AppProperties appProperties) {
     this.appProperties = appProperties;
     this.jwtAuthFilter = jwtAuthFilter;
-    //this.authenticationProvider = authenticationProvider;
   }
 
   @Bean
@@ -39,13 +34,12 @@ public class SecurityConfig {
         .csrf(AbstractHttpConfigurer::disable)
         .cors(cors -> cors.configurationSource(corsConfigurationSource()))
         .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
+        .addFilterBefore(jwtAuthFilter, UsernamePasswordAuthenticationFilter.class)
         .authorizeHttpRequests(auth -> auth
-            .requestMatchers("/api/v1/me/**").authenticated()
+            .requestMatchers("/api/v1/user/**").authenticated()
             //TODO: Add requestMatchers for specific HttpMethod + routes
             .anyRequest().permitAll()
         )
-        //.authenticationProvider(authenticationProvider)
-        .addFilterBefore(jwtAuthFilter, UsernamePasswordAuthenticationFilter.class)
     ;
 
     return http.build();
