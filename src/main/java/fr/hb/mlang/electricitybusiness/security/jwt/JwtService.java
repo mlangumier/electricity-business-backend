@@ -7,6 +7,7 @@ import jakarta.validation.ValidationException;
 import java.time.Duration;
 import java.time.Instant;
 import java.util.Date;
+import java.util.UUID;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Service;
 
@@ -38,8 +39,10 @@ public class JwtService {
    */
   private String generateToken(String email, Duration expirationDuration) {
     Instant expirationDate = Instant.now().plus(expirationDuration);
+    String jti = UUID.randomUUID().toString();
     return JWT
         .create()
+        .withJWTId(jti)
         .withSubject(email)
         .withIssuedAt(Instant.now())
         .withExpiresAt(expirationDate)
@@ -70,6 +73,17 @@ public class JwtService {
    */
   public boolean isTokenExpired(String token) {
     return this.extractExpiration(token).before(new Date());
+  }
+
+  /**
+   * Gets the identifier of the token
+   *
+   * @param token
+   * @return
+   */
+  public String extractJti(String token) {
+    DecodedJWT jwt = JWT.require(jwtKeyManager.getAlgorithm()).build().verify(token);
+    return jwt.getId();
   }
 
   /**

@@ -3,7 +3,10 @@ package fr.hb.mlang.electricitybusiness.security.auth.service;
 import fr.hb.mlang.electricitybusiness.modules.tokens.email.EmailVerificationToken;
 import fr.hb.mlang.electricitybusiness.modules.user.domain.User;
 import fr.hb.mlang.electricitybusiness.security.auth.controller.dto.EmailAvailableRequest;
+import fr.hb.mlang.electricitybusiness.security.auth.controller.dto.LoginRequestDto;
+import fr.hb.mlang.electricitybusiness.security.auth.controller.dto.LoginResponseDto;
 import fr.hb.mlang.electricitybusiness.security.auth.controller.dto.RegisterRequest;
+import jakarta.servlet.http.HttpServletResponse;
 
 public interface AuthService {
 
@@ -35,9 +38,19 @@ public interface AuthService {
   void verifyAccount(String token);
 
   // sendResetPasswordEmail
+
   // updatePassword
 
-  // login
+  /**
+   * Authenticates the {@link User} after verifying their credentials, and sets a cookie with a
+   * refresh token to keep them authenticated.
+   *
+   * @param credentials Email and password provided by the user on login
+   * @param response    Http response that will set the refresh token in the cookies.
+   * @return A DTO containing the user and the access token.
+   */
+  LoginResponseDto authenticateUser(LoginRequestDto credentials, HttpServletResponse response);
+
   // refreshToken
 
   // logout

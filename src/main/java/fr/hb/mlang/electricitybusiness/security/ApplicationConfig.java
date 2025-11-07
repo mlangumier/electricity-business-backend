@@ -5,20 +5,21 @@ import fr.hb.mlang.electricitybusiness.modules.user.repository.UserRepository;
 import fr.hb.mlang.electricitybusiness.security.auth.SecurityUserDetails;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.Primary;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
+import org.springframework.security.crypto.argon2.Argon2PasswordEncoder;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
+import org.springframework.security.crypto.password.PasswordEncoder;
 
 @Configuration
 public class ApplicationConfig {
 
-  private final AuthenticationConfiguration authConfig;
   private final UserRepository userRepository;
 
-  public ApplicationConfig(AuthenticationConfiguration authConfig, UserRepository userRepository) {
-    this.authConfig = authConfig;
+  public ApplicationConfig(UserRepository userRepository) {
     this.userRepository = userRepository;
   }
 
@@ -28,7 +29,8 @@ public class ApplicationConfig {
    * @return the authenticated user.
    */
   @Bean
-  public AuthenticationManager getAuthenticationManager() throws Exception {
+  public AuthenticationManager authenticationManager(AuthenticationConfiguration authConfig)
+      throws Exception {
     return authConfig.getAuthenticationManager();
   }
 
@@ -49,10 +51,21 @@ public class ApplicationConfig {
   /**
    * Creates a password encoder for the user's password.
    *
-   * @return the password encoder.
+   * @return the BCrypt password encoder.
    */
   @Bean
-  public BCryptPasswordEncoder passwordEncoder() {
+  @Primary
+  public PasswordEncoder bCryptPasswordEncoder() {
     return new BCryptPasswordEncoder();
+  }
+
+  /**
+   * Creates a password encoder that we'll use to store an opaque Refresh token
+   *
+   * @return the argon2 password encoder.
+   */
+  @Bean
+  public Argon2PasswordEncoder argon2() {
+    return Argon2PasswordEncoder.defaultsForSpringSecurity_v5_8();
   }
 }

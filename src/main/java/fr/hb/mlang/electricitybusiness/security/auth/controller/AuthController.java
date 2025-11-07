@@ -1,8 +1,11 @@
 package fr.hb.mlang.electricitybusiness.security.auth.controller;
 
 import fr.hb.mlang.electricitybusiness.security.auth.controller.dto.EmailAvailableRequest;
+import fr.hb.mlang.electricitybusiness.security.auth.controller.dto.LoginRequestDto;
+import fr.hb.mlang.electricitybusiness.security.auth.controller.dto.LoginResponseDto;
 import fr.hb.mlang.electricitybusiness.security.auth.controller.dto.RegisterRequest;
 import fr.hb.mlang.electricitybusiness.security.auth.service.AuthServiceImpl;
+import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -43,6 +46,17 @@ public class AuthController {
     return ResponseEntity.noContent().build();
   }
 
-  // sendResetPassword
-  // updatePassword
+  // Endpoint: sendResetPassword
+
+  // Endpoint: updatePassword
+
+  @PostMapping("/auth/login")
+  public ResponseEntity<LoginResponseDto> login(@Valid @RequestBody LoginRequestDto credentials, HttpServletResponse response) {
+    LoginResponseDto responseDto = authService.authenticateUser(credentials, response);
+    return ResponseEntity.status(HttpStatus.OK).body(responseDto);
+  }
+
+  // Endpoint: refreshToken
+
+  // Endpoint: logout
 }

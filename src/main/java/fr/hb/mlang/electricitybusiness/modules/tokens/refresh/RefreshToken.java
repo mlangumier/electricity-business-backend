@@ -35,7 +35,7 @@ public class RefreshToken {
   private UUID id;
 
   @NotBlank
-  @Size(max = 64)
+  @Size(max = 255)
   @Column(name = "token_hash", nullable = false, updatable = false, unique = true, length = 64)
   private String tokenHash;
 

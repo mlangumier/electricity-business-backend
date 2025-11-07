@@ -36,11 +36,10 @@ public class SecurityConfig {
         .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
         .addFilterBefore(jwtAuthFilter, UsernamePasswordAuthenticationFilter.class)
         .authorizeHttpRequests(auth -> auth
-            .requestMatchers("/api/v1/me/**").authenticated()
+            .requestMatchers("/api/v1/user/**").authenticated()
             //TODO: Add requestMatchers for specific HttpMethod + routes
             .anyRequest().permitAll()
         )
-    //  .authenticationProvider(authProvider) // If issues with authentication, check if creating a custom authProvider helps
     ;
 
     return http.build();
