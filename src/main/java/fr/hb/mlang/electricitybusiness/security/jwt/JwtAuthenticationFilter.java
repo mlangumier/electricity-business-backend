@@ -3,7 +3,6 @@ package fr.hb.mlang.electricitybusiness.security.jwt;
 import com.auth0.jwt.exceptions.TokenExpiredException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import fr.hb.mlang.electricitybusiness.security.ApplicationConfig;
-import fr.hb.mlang.electricitybusiness.security.auth.SecurityUserDetails;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
@@ -17,7 +16,6 @@ import org.springframework.security.authentication.UsernamePasswordAuthenticatio
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
-import org.springframework.security.web.authentication.WebAuthenticationDetailsSource;
 import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
 
@@ -59,24 +57,16 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
       userEmail = jwtService.extractUserEmail(accessToken);
 
       if (userEmail != null && SecurityContextHolder.getContext().getAuthentication() == null) {
-        System.out.println(">> Entering authenticating user");
 
-        UserDetails userDetails = appConfig.userDetailsService().loadUserByUsername(userEmail); //WARNING: UserDetails vs SecurityUserDetails
-        System.out.println(">> Found userDetails?: " + userDetails.toString());
-
-        //TEST: see what happens
-        //SecurityUserDetails securityUserDetails = (SecurityUserDetails) appConfig.userDetailsService().loadUserByUsername(userEmail);
-        //System.out.println(">> Found SecurityUserDetails?: " + securityUserDetails.toString());
+        UserDetails userDetails = appConfig.userDetailsService().loadUserByUsername(userEmail);
 
         if (jwtService.isTokenValid(accessToken, userDetails)) {
           Authentication authentication = new UsernamePasswordAuthenticationToken(
-          //UsernamePasswordAuthenticationToken authentication = new UsernamePasswordAuthenticationToken(
               userDetails,
               null,
               userDetails.getAuthorities()
           );
 
-          //authentication.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
           SecurityContextHolder.getContext().setAuthentication(authentication);
         }
       }
