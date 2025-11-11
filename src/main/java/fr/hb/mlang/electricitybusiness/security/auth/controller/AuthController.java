@@ -5,6 +5,7 @@ import fr.hb.mlang.electricitybusiness.security.auth.controller.dto.LoginRequest
 import fr.hb.mlang.electricitybusiness.security.auth.controller.dto.LoginResponseDto;
 import fr.hb.mlang.electricitybusiness.security.auth.controller.dto.RegisterRequest;
 import fr.hb.mlang.electricitybusiness.security.auth.service.AuthServiceImpl;
+import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
@@ -56,7 +57,11 @@ public class AuthController {
     return ResponseEntity.status(HttpStatus.OK).body(responseDto);
   }
 
-  // Endpoint: refreshToken
+  @PostMapping("/auth/refresh")
+  public ResponseEntity<LoginResponseDto> refresh(HttpServletRequest request, HttpServletResponse response) {
+    LoginResponseDto responseDto = authService.refreshToken(request, response);
+    return ResponseEntity.status(HttpStatus.OK).body(responseDto);
+  }
 
   // Endpoint: logout
 }

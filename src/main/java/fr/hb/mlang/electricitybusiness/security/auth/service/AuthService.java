@@ -1,11 +1,13 @@
 package fr.hb.mlang.electricitybusiness.security.auth.service;
 
 import fr.hb.mlang.electricitybusiness.modules.tokens.email.EmailVerificationToken;
+import fr.hb.mlang.electricitybusiness.modules.tokens.refresh.RefreshToken;
 import fr.hb.mlang.electricitybusiness.modules.user.domain.User;
 import fr.hb.mlang.electricitybusiness.security.auth.controller.dto.EmailAvailableRequest;
 import fr.hb.mlang.electricitybusiness.security.auth.controller.dto.LoginRequestDto;
 import fr.hb.mlang.electricitybusiness.security.auth.controller.dto.LoginResponseDto;
 import fr.hb.mlang.electricitybusiness.security.auth.controller.dto.RegisterRequest;
+import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 
 public interface AuthService {
@@ -51,7 +53,15 @@ public interface AuthService {
    */
   LoginResponseDto authenticateUser(LoginRequestDto credentials, HttpServletResponse response);
 
-  // refreshToken
+  /**
+   * Automatically authenticates the user by returning a new <code>Access Token</code> if their
+   * {@link RefreshToken} is still valid.
+   *
+   * @param request  Object containing the cookie with the refresh token
+   * @param response Http response that will set the refresh token in the cookies.
+   * @return A DTO containing the user and the access token.
+   */
+  LoginResponseDto refreshToken(HttpServletRequest request, HttpServletResponse response);
 
   // logout
 
