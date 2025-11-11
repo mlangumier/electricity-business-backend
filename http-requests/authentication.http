@@ -1,0 +1,38 @@
+### Check is email available
+POST {{baseUrl}}/email-available
+Content-Type: application/json
+
+{
+  "email": "henry@test.com"
+}
+
+### Register
+POST {{baseUrl}}/register
+Content-Type: application/json
+
+{
+  "email": "henry@test.com",
+  "password": "henry@password",
+  "firstName": "Henry",
+  "lastName": "Kobyla",
+  "dateOfBirth": "1493-01-01",
+  "homeAddress": "Street of the Smith, Skalitz, Bohemia"
+}
+
+### Login & set accessToken
+POST {{baseUrl}}/auth/login
+Content-Type: application/json
+
+{
+  "email": "henry@test.com",
+  "password": "henry@password"
+}
+
+> {% client.global.set("accessToken", response.body.accessToken); %}
+
+### Try access private profile with Bearer token
+GET {{baseUrl}}/user/profile
+Authorization: Bearer {{accessToken}}
+
+### Try access profile not-authenticated
+GET {{baseUrl}}/user/profile

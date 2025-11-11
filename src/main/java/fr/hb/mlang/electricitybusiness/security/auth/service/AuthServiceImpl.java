@@ -76,7 +76,7 @@ public class AuthServiceImpl implements AuthService {
   @Override
   public Boolean checkIsEmailAvailable(EmailAvailableRequest request) {
     //FIXME: Change to find().elseThrow() & void return
-    return userRepository.findByEmail(request.email()).isPresent();
+    return userRepository.findByEmail(request.email()).isEmpty();
   }
 
   @Override

@@ -11,7 +11,7 @@ services:
     volumes:                  # Persist data between restarts
       - eb_mysql:/var/lib/mysql
     ports:
-      - 3306:3306
+      - "3306:3306"
     healthcheck:               # Wait until database is ready
       test: ["CMD-SHELL", "mysqladmin ping -h 127.0.0.1 -u$$MYSQL_USER -p$$MYSQL_PASSWORD || exit 1"]
       interval: 10s

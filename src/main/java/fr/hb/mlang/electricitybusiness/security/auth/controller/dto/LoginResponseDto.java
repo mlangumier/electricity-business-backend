@@ -6,16 +6,22 @@ import java.util.UUID;
 public record LoginResponseDto(
     String accessToken,
     User user
-    ) {
+) {
 
-  public record User (
+  public record User(
       UUID id,
       String email,
       Role role,
-      String firstName,
-      String lastName,
-      String avatar,
-      String preferences
-  ) {}
+      Profile profile
+  ) {
+
+    public record Profile(
+        String firstName,
+        String lastName,
+        String avatar,
+        String preferences) {
+
+    }
+  }
 
 }

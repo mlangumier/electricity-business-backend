@@ -82,8 +82,11 @@ class LoginIT extends DatabaseConfigIT {
         .andReturn().getResponse().getContentAsString();
 
     assertNotNull(response, "Response should not be null");
+
     LoginResponseDto responseDto = objectMapper.readValue(response, LoginResponseDto.class);
     assertNotNull(responseDto.accessToken(), "AccessToken should not be null");
+    assertNotNull(responseDto.user().email(), "Email should not be null");
+    assertNotNull(responseDto.user().profile().firstName(), "FirstName should not be null");
 
     // TODO: implement this after setting up "/refresh" route
     // Confirm that the user has received a valid token and can use it in authenticated routes:
