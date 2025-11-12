@@ -36,3 +36,7 @@ Authorization: Bearer {{accessToken}}
 
 ### Try access profile not-authenticated
 GET {{baseUrl}}/user/profile
+
+### Logout
+POST {{baseUrl}}/auth/logout
+Authorization: Bearer {{accessToken}}

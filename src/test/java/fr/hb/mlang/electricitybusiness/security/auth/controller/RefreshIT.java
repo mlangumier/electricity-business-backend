@@ -19,4 +19,6 @@ public class RefreshIT extends DatabaseConfigIT {
   private MockMvc mockMvc;
   @Autowired
   private ObjectMapper mapper;
+
+  //TODO: setup refresh tests
 }

@@ -48,7 +48,7 @@ public interface AuthService {
    * refresh token to keep them authenticated.
    *
    * @param credentials Email and password provided by the user on login
-   * @param response    Http response that will set the refresh token in the cookies.
+   * @param response    Http response that will set the refresh token in the cookies
    * @return A DTO containing the user and the access token.
    */
   LoginResponseDto authenticateUser(LoginRequestDto credentials, HttpServletResponse response);
@@ -58,12 +58,17 @@ public interface AuthService {
    * {@link RefreshToken} is still valid.
    *
    * @param request  Object containing the cookie with the refresh token
-   * @param response Http response that will set the refresh token in the cookies.
+   * @param response Http response that will set the refresh token in the cookies
    * @return A DTO containing the user and the access token.
    */
   LoginResponseDto refreshToken(HttpServletRequest request, HttpServletResponse response);
 
-  // logout
+  /**
+   * Logs out a user by deleting the current refresh token and setting the cookie's token to expire immediately.
+   * @param request Object containing the cookie with the refresh token
+   * @param response Http response that will set the token in the cookies
+   */
+  void logout(HttpServletRequest request, HttpServletResponse response);
 
 
 }

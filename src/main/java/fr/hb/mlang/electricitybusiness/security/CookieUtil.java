@@ -9,7 +9,7 @@ import org.springframework.http.ResponseCookie;
 
 public class CookieUtil {
 
-  private static final String cookieName = "refreshToken";
+  private static final String COOKIE_NAME = "refreshToken";
 
   private CookieUtil() {
     // Prevents initialization
@@ -24,7 +24,7 @@ public class CookieUtil {
    */
   public static ResponseCookie createRefreshTokenCookie(String token, Duration tokenDuration) {
     return ResponseCookie
-        .from(cookieName, token)
+        .from(COOKIE_NAME, token)
         .httpOnly(true)
         .secure(false) // Update to `true` after setting up HTTPS environments & for deployment
         .path("/api/v1/auth/refresh")
@@ -41,7 +41,7 @@ public class CookieUtil {
    */
   public static ResponseCookie cleanRefreshTokenCookie() {
     return ResponseCookie
-        .from(cookieName, "")
+        .from(COOKIE_NAME, "")
         .httpOnly(true)
         .secure(false)
         .path("/api/v1/auth/refresh")
@@ -60,7 +60,7 @@ public class CookieUtil {
   public static String readRefreshTokenCookie(Cookie[] cookies) {
     return Arrays
         .stream(Optional.ofNullable(cookies).orElse(new Cookie[0]))
-        .filter(cookie -> cookie.getName().equals(cookieName))
+        .filter(cookie -> cookie.getName().equals(COOKIE_NAME))
         .map(Cookie::getValue)
         .findFirst().orElse(null);
   }

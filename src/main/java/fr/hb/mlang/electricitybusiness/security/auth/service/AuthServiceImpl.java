@@ -26,6 +26,7 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.transaction.Transactional;
 import java.time.Instant;
+import java.util.Arrays;
 import org.springframework.http.HttpHeaders;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -232,14 +233,12 @@ public class AuthServiceImpl implements AuthService {
     refreshTokenRepository.save(foundRefreshToken);
 
     String rawRefreshToken = jwtService.generateRefreshToken(userDetails.getUsername());
-    String hashRefreshtoken = argon2Encoder.encode(rawRefreshToken);
+    String hashRefreshToken = argon2Encoder.encode(rawRefreshToken);
     RefreshToken refreshToken = new RefreshToken(
-        hashRefreshtoken,
+        hashRefreshToken,
         Instant.now().plus(jwtProps.refreshExpiration())
     );
     refreshToken.setUser(userDetails.user());
-    //userDetails.auth().setLastLogin(Instant.now());
-    //userRepository.save(user);
     refreshTokenRepository.save(refreshToken);
 
     response.addHeader(
@@ -252,6 +251,36 @@ public class AuthServiceImpl implements AuthService {
     String accessToken = jwtService.generateAccessToken(userDetails.getUsername());
 
     return mapper.toLoginResponseDto(accessToken, userDetails.user());
+  }
 
+  @Override
+  @Transactional
+  public void logout(HttpServletRequest request, HttpServletResponse response) {
+    // Get cookie's refresh token
+    String cookieRefresh = CookieUtil.readRefreshTokenCookie(request.getCookies());
+    if (cookieRefresh == null) {
+      //ERROR here: check JwtAuthenticationFilter for auto-auth check && SecurityConfig for auto-logout setup
+      throw new RefreshTokenException("Refresh token missing from request cookies.");
+    }
+
+    String email = jwtService.extractUserEmail(cookieRefresh);
+    if (email == null || email.isBlank()) {
+      throw new RefreshTokenException("Couldn't extract email from refresh token.");
+    }
+    SecurityUserDetails userDetails = (SecurityUserDetails) userDetailsService.loadUserByUsername(
+        email);
+
+    userDetails
+        .user()
+        .getRefreshTokens()
+        .stream()
+        .filter(token -> argon2Encoder.matches(cookieRefresh, token.getTokenHash()))
+        .findFirst()
+        .ifPresent(foundRefreshToken -> refreshTokenRepository.delete(foundRefreshToken));
+
+    response.addHeader(
+        HttpHeaders.COOKIE,
+        CookieUtil.cleanRefreshTokenCookie().toString()
+    );
   }
 }
