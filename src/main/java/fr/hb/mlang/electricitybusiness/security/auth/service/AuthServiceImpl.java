@@ -26,7 +26,6 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.transaction.Transactional;
 import java.time.Instant;
-import java.util.Arrays;
 import org.springframework.http.HttpHeaders;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -76,7 +75,6 @@ public class AuthServiceImpl implements AuthService {
 
   @Override
   public Boolean checkIsEmailAvailable(EmailAvailableRequest request) {
-    //FIXME: Change to find().elseThrow() & void return
     return userRepository.findByEmail(request.email()).isEmpty();
   }
 
@@ -199,87 +197,65 @@ public class AuthServiceImpl implements AuthService {
   @Override
   @Transactional
   public LoginResponseDto refreshToken(HttpServletRequest request, HttpServletResponse response) {
-    // Get cookie's refresh token
-    String cookieRefresh = CookieUtil.readRefreshTokenCookie(request.getCookies());
-    if (cookieRefresh == null) {
+    String cookieRefreshToken = CookieUtil.readRefreshTokenCookie(request.getCookies());
+    if (cookieRefreshToken == null) {
       throw new RefreshTokenException("Refresh token missing from request cookies.");
     }
 
-    // Check that token is valid and has the right user email address
-    if (jwtService.isTokenExpired(cookieRefresh)) {
+    jwtService.assertSignatureIsValid(cookieRefreshToken);
+
+    if (jwtService.isTokenExpired(cookieRefreshToken)) {
       throw new RefreshTokenException("Refresh token is expired.");
     }
 
-    String email = jwtService.extractUserEmail(cookieRefresh);
+    String email = jwtService.extractUserEmail(cookieRefreshToken);
     if (email == null || email.isBlank()) {
       throw new RefreshTokenException("Couldn't extract email from refresh token.");
     }
+
     SecurityUserDetails userDetails = (SecurityUserDetails) userDetailsService.loadUserByUsername(
         email);
-
     if (!userDetails.auth().getEmailVerified()) {
       throw new RefreshTokenException("User is not verified.");
     }
 
-    RefreshToken foundRefreshToken = userDetails
-        .user()
-        .getRefreshTokens()
-        .stream()
-        .filter(token -> argon2Encoder.matches(cookieRefresh, token.getTokenHash()))
-        .findFirst()
-        .orElseThrow(() -> new RefreshTokenException("No refresh token found."));
+    String newAccessToken = jwtService.generateAccessToken(userDetails.getUsername());
 
-    foundRefreshToken.setRevoked(true);
-    refreshTokenRepository.save(foundRefreshToken);
-
-    String rawRefreshToken = jwtService.generateRefreshToken(userDetails.getUsername());
-    String hashRefreshToken = argon2Encoder.encode(rawRefreshToken);
-    RefreshToken refreshToken = new RefreshToken(
-        hashRefreshToken,
-        Instant.now().plus(jwtProps.refreshExpiration())
-    );
-    refreshToken.setUser(userDetails.user());
-    refreshTokenRepository.save(refreshToken);
-
-    response.addHeader(
-        HttpHeaders.SET_COOKIE,
-        CookieUtil
-            .createRefreshTokenCookie(rawRefreshToken, jwtProps.refreshExpiration())
-            .toString()
-    );
-
-    String accessToken = jwtService.generateAccessToken(userDetails.getUsername());
-
-    return mapper.toLoginResponseDto(accessToken, userDetails.user());
+    return mapper.toLoginResponseDto(newAccessToken, userDetails.user());
   }
 
   @Override
   @Transactional
   public void logout(HttpServletRequest request, HttpServletResponse response) {
-    // Get cookie's refresh token
-    String cookieRefresh = CookieUtil.readRefreshTokenCookie(request.getCookies());
-    if (cookieRefresh == null) {
-      //ERROR here: check JwtAuthenticationFilter for auto-auth check && SecurityConfig for auto-logout setup
+    String cookieRefreshToken = CookieUtil.readRefreshTokenCookie(request.getCookies());
+    if (cookieRefreshToken == null) {
       throw new RefreshTokenException("Refresh token missing from request cookies.");
     }
 
-    String email = jwtService.extractUserEmail(cookieRefresh);
+    jwtService.assertSignatureIsValid(cookieRefreshToken);
+
+    if (jwtService.isTokenExpired(cookieRefreshToken)) {
+      throw new RefreshTokenException("Refresh token is expired.");
+    }
+
+    String email = jwtService.extractUserEmail(cookieRefreshToken);
     if (email == null || email.isBlank()) {
       throw new RefreshTokenException("Couldn't extract email from refresh token.");
     }
+
     SecurityUserDetails userDetails = (SecurityUserDetails) userDetailsService.loadUserByUsername(
         email);
 
-    userDetails
-        .user()
-        .getRefreshTokens()
+    RefreshToken refreshToken = userDetails.user().getRefreshTokens()
         .stream()
-        .filter(token -> argon2Encoder.matches(cookieRefresh, token.getTokenHash()))
-        .findFirst()
-        .ifPresent(foundRefreshToken -> refreshTokenRepository.delete(foundRefreshToken));
+        .filter(token -> argon2Encoder.matches(cookieRefreshToken, token.getTokenHash()))
+        .findFirst().orElseThrow(() -> new RefreshTokenException("Couldn't find refresh token"));
+
+    userDetails.user().removeRefreshToken(refreshToken);
+    userRepository.save(userDetails.user());
 
     response.addHeader(
-        HttpHeaders.COOKIE,
+        HttpHeaders.SET_COOKIE,
         CookieUtil.cleanRefreshTokenCookie().toString()
     );
   }

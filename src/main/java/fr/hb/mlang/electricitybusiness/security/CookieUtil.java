@@ -27,7 +27,7 @@ public class CookieUtil {
         .from(COOKIE_NAME, token)
         .httpOnly(true)
         .secure(false) // Update to `true` after setting up HTTPS environments & for deployment
-        .path("/api/v1/auth/refresh")
+        .path("/api/v1/auth")
         .sameSite(SameSiteCookies.NONE.toString())
         .maxAge(tokenDuration)
         .build();
@@ -44,7 +44,7 @@ public class CookieUtil {
         .from(COOKIE_NAME, "")
         .httpOnly(true)
         .secure(false)
-        .path("/api/v1/auth/refresh")
+        .path("/api/v1/auth")
         .sameSite(SameSiteCookies.NONE.toString())
         .maxAge(0)
         .build();

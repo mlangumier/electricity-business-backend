@@ -1,15 +1,11 @@
 package fr.hb.mlang.electricitybusiness.security.jwt;
 
 import com.auth0.jwt.JWT;
-import com.auth0.jwt.interfaces.DecodedJWT;
 import fr.hb.mlang.electricitybusiness.config.AppProperties;
-import fr.hb.mlang.electricitybusiness.modules.tokens.refresh.RefreshTokenRepository;
 import fr.hb.mlang.electricitybusiness.security.auth.exception.RefreshTokenException;
-import jakarta.validation.ValidationException;
 import java.time.Duration;
 import java.time.Instant;
 import java.util.Date;
-import java.util.UUID;
 import org.springframework.stereotype.Service;
 
 @Service
@@ -81,8 +77,7 @@ public class JwtService {
    * @return The expiration date.
    */
   public Date extractExpiration(String token) {
-    DecodedJWT jwt = JWT.require(jwtKeyManager.getAlgorithm()).build().verify(token);
-    return jwt.getExpiresAt();
+    return JWT.decode(token).getExpiresAt();
   }
 
   /**
@@ -92,7 +87,15 @@ public class JwtService {
    * @return A user's email address.
    */
   public String extractUserEmail(String token) {
-    DecodedJWT jwt = JWT.require(jwtKeyManager.getAlgorithm()).build().verify(token);
-    return jwt.getSubject();
+    return JWT.decode(token).getSubject();
+  }
+
+  /**
+   * Asserts that the given token corresponds to the expected format & signature.
+   *
+   * @param token Token to verify
+   */
+  public void assertSignatureIsValid(String token) {
+    jwtKeyManager.getAlgorithm().verify(JWT.decode(token));
   }
 }
