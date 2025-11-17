@@ -1,0 +1,17 @@
+### Login
+POST {{baseUrl}}/auth/login
+Content-Type: application/json
+
+{
+  "email": "henry@test.com",
+  "password": "henry@password"
+}
+
+> {% client.global.set("accessToken", response.body.accessToken); %}
+
+### Get Profile data
+GET {{baseUrl}}/user/profile
+Authorization: Bearer {{accessToken}}
+
+### Fail: Get Profile data without accessToken
+GET {{baseUrl}}/user/profile

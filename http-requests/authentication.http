@@ -1,0 +1,45 @@
+### Check is email available
+POST {{baseUrl}}/email-available
+Content-Type: application/json
+
+{
+  "email": "henry@test.com"
+}
+
+### REGISTER
+POST {{baseUrl}}/register
+Content-Type: application/json
+
+{
+  "email": "henry@test.com",
+  "password": "henry@password",
+  "firstName": "Henry",
+  "lastName": "Kobyla",
+  "dateOfBirth": "1493-01-01",
+  "homeAddress": "Street of the Smith, Skalitz, Bohemia"
+}
+
+### LOGIN & Set accessToken
+POST {{baseUrl}}/auth/login
+Content-Type: application/json
+
+{
+  "email": "henry@test.com",
+  "password": "henry@password"
+}
+
+> {% client.global.set("accessToken", response.body.accessToken); %}
+
+### TEST - Get user profile
+GET {{baseUrl}}/user/profile
+Authorization: Bearer {{accessToken}}
+
+### REFRESH
+POST {{baseUrl}}/auth/refresh
+Content-Type: application/json
+
+> {% client.global.set("accessToken", response.body.accessToken) %}
+
+### LOGOUT
+POST {{baseUrl}}/auth/logout
+#Authorization: Bearer {{accessToken}}

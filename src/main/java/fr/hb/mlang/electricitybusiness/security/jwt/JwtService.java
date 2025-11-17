@@ -1,14 +1,11 @@
 package fr.hb.mlang.electricitybusiness.security.jwt;
 
 import com.auth0.jwt.JWT;
-import com.auth0.jwt.interfaces.DecodedJWT;
 import fr.hb.mlang.electricitybusiness.config.AppProperties;
-import jakarta.validation.ValidationException;
+import fr.hb.mlang.electricitybusiness.security.auth.exception.RefreshTokenException;
 import java.time.Duration;
 import java.time.Instant;
 import java.util.Date;
-import java.util.UUID;
-import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Service;
 
 @Service
@@ -39,10 +36,8 @@ public class JwtService {
    */
   private String generateToken(String email, Duration expirationDuration) {
     Instant expirationDate = Instant.now().plus(expirationDuration);
-    String jti = UUID.randomUUID().toString();
     return JWT
         .create()
-        .withJWTId(jti)
         .withSubject(email)
         .withIssuedAt(Instant.now())
         .withExpiresAt(expirationDate)
@@ -53,16 +48,16 @@ public class JwtService {
    * Checks the validity of a token by verifying if the email corresponds to the user and if the
    * token is expired or not.
    *
-   * @param token       The token to verify
-   * @param userDetails The user who (supposedly) owns the token
+   * @param token The token to verify
+   * @param email Email of the user who owns the token
    * @return {true} if the user's email and token's email correspond and the token hasn't expired.
    */
-  public boolean isTokenValid(String token, UserDetails userDetails) {
+  public boolean isTokenValid(String token, String email) {
     if (token == null || token.isBlank()) {
-      throw new ValidationException("Token is missing or empty");
+      throw new RefreshTokenException("Token is missing or empty");
     }
     String tokenEmail = this.extractUserEmail(token);
-    return (tokenEmail.equals(userDetails.getUsername()) && !this.isTokenExpired(token));
+    return (tokenEmail.equals(email) && !this.isTokenExpired(token));
   }
 
   /**
@@ -76,25 +71,13 @@ public class JwtService {
   }
 
   /**
-   * Gets the identifier of the token
-   *
-   * @param token
-   * @return
-   */
-  public String extractJti(String token) {
-    DecodedJWT jwt = JWT.require(jwtKeyManager.getAlgorithm()).build().verify(token);
-    return jwt.getId();
-  }
-
-  /**
    * Gets the expiration date of the token.
    *
    * @param token The token to verify
    * @return The expiration date.
    */
   public Date extractExpiration(String token) {
-    DecodedJWT jwt = JWT.require(jwtKeyManager.getAlgorithm()).build().verify(token);
-    return jwt.getExpiresAt();
+    return JWT.decode(token).getExpiresAt();
   }
 
   /**
@@ -104,7 +87,15 @@ public class JwtService {
    * @return A user's email address.
    */
   public String extractUserEmail(String token) {
-    DecodedJWT jwt = JWT.require(jwtKeyManager.getAlgorithm()).build().verify(token);
-    return jwt.getSubject();
+    return JWT.decode(token).getSubject();
+  }
+
+  /**
+   * Asserts that the given token corresponds to the expected format & signature.
+   *
+   * @param token Token to verify
+   */
+  public void assertSignatureIsValid(String token) {
+    jwtKeyManager.getAlgorithm().verify(JWT.decode(token));
   }
 }
