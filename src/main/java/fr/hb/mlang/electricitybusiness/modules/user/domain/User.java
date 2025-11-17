@@ -21,12 +21,17 @@ import jakarta.persistence.OneToOne;
 import jakarta.persistence.Table;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
-import jakarta.validation.constraints.Pattern;
 import jakarta.validation.constraints.Size;
+import java.time.Instant;
+import java.util.Collection;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Objects;
 import java.util.Set;
 import java.util.UUID;
+import org.springframework.security.core.GrantedAuthority;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
+import org.springframework.security.core.userdetails.UserDetails;
 
 /**
  * Entity that contains basic user information, necessary for account creation.
@@ -36,7 +41,7 @@ import java.util.UUID;
     @Index(name = "index_users_email", columnList = "email"),
     @Index(name = "index_users_phone", columnList = "phone_number")
 })
-public class User extends AuditedEntity {
+public class User extends AuditedEntity implements UserDetails {
 
   @Id
   @GeneratedValue(strategy = GenerationType.UUID)
@@ -49,17 +54,20 @@ public class User extends AuditedEntity {
   @Column(name = "email", nullable = false, unique = true, length = 255)
   private String email;
 
-  @Size(max = 15)
-  @Pattern(regexp = "^\\+?[0-9 .()-]{7,15}$")
-  @Column(name = "phone_number", unique = true, length = 15)
-  private String phoneNumber;
+  @NotBlank
+  @Size(max = 60) // 60 is perfect for BCrypt; increase to 255 if we need to use something else
+  @Column(name = "password_hash", nullable = false, length = 60)
+  private String passwordHash;
+
+  @Column(name = "is_email_verified", nullable = false)
+  private boolean emailVerified;
+
+  @Column(name = "last_login")
+  private Instant lastLogin;
 
   @Enumerated(EnumType.STRING)
   @Column(name = "role", nullable = false, length = 32)
   private Role role = Role.USER;
-
-  @OneToOne(mappedBy = "user", cascade = CascadeType.ALL)
-  private UserAuth auth;
 
   @OneToOne(mappedBy = "user", cascade = CascadeType.ALL)
   private UserProfile profile;
@@ -88,9 +96,9 @@ public class User extends AuditedEntity {
   /**
    * Entity constructor
    */
-  public User(String email, String phoneNumber) {
+  public User(String email,String passwordHash) {
     this.email = email;
-    this.phoneNumber = phoneNumber;
+    this.passwordHash = passwordHash;
   }
 
   public UUID getId() {
@@ -109,13 +117,30 @@ public class User extends AuditedEntity {
     this.email = email;
   }
 
-  public String getPhoneNumber() {
-    return phoneNumber;
+  public String getPasswordHash() {
+    return passwordHash;
   }
 
-  public void setPhoneNumber(String phoneNumber) {
-    this.phoneNumber = phoneNumber;
+  public void setPasswordHash(String passwordHash) {
+    this.passwordHash = passwordHash;
   }
+
+  public boolean getEmailVerified() {
+    return emailVerified;
+  }
+
+  public void setEmailVerified(boolean verified) {
+    this.emailVerified = verified;
+  }
+
+  public Instant getLastLogin() {
+    return lastLogin;
+  }
+
+  public void setLastLogin(Instant lastLogin) {
+    this.lastLogin = lastLogin;
+  }
+
 
   public Role getRole() {
     return role;
@@ -123,17 +148,6 @@ public class User extends AuditedEntity {
 
   public void setRole(Role role) {
     this.role = role;
-  }
-
-  public UserAuth getAuth() {
-    return auth;
-  }
-
-  public void setAuth(UserAuth auth) {
-    if (this.auth == auth) return;
-    if (this.auth != null) this.auth.setUser(null);
-    this.auth = auth;
-    if (auth != null) auth.setUser(this);
   }
 
   public UserProfile getProfile() {
@@ -180,7 +194,6 @@ public class User extends AuditedEntity {
   public Set<RefreshToken> getRefreshTokens() {
     return refreshTokens;
   }
-
 
   //--- Helper methods
 
@@ -232,6 +245,28 @@ public class User extends AuditedEntity {
     refreshToken.setUser(null);
   }
 
+  //--- Authentication
+
+  @Override
+  public Collection<? extends GrantedAuthority> getAuthorities() {
+    return List.of(new SimpleGrantedAuthority("ROLE_" + getRole().name()));
+  }
+
+  @Override
+  public String getPassword() {
+    return this.passwordHash;
+  }
+
+  @Override
+  public String getUsername() {
+    return this.email;
+  }
+
+  @Override
+  public boolean isEnabled() {
+    return this.emailVerified;
+  }
+
   //--- Overrides
 
   @Override
@@ -252,7 +287,6 @@ public class User extends AuditedEntity {
     return "User{" +
         "id=" + id +
         ", email='" + email + '\'' +
-        ", phoneNumber='" + phoneNumber + '\'' +
         ", role=" + role +
         super.toString() +
         '}';

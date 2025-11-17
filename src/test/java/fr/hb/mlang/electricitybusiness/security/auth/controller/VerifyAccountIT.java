@@ -141,7 +141,8 @@ public class VerifyAccountIT extends DatabaseConfigIT {
    */
   private Seed seedUnverifiedUser(int expirationTime, ChronoUnit unit) {
     User user = new User("test@test.com", null);
-    user.setAuth(new UserAuth(encoder.encode("password")));
+    //TODO: auth
+    //user.setAuth(new UserAuth(encoder.encode("password")));
     user.setProfile(new UserProfile(
         "Test",
         "Testson",

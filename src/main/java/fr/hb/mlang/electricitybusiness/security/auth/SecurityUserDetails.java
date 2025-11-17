@@ -8,6 +8,7 @@ import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 
+//TODO: auth -> replace this with User
 /**
  * Transient adapter that implements {@link UserDetails} and wraps both {@link User} and
  * {@link UserAuth}, exposing their fields while keeping them separate (entity vs authentication).

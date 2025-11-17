@@ -32,17 +32,6 @@ public class UserAuth extends AuditedEntity {
   @JoinColumn(name = "user_id", nullable = false)
   private User user;
 
-  @NotBlank
-  @Size(max = 60) // 60 is perfect for BCrypt; increase to 255 if we need to use something else
-  @Column(name = "password_hash", nullable = false, length = 60)
-  private String passwordHash;
-
-  @Column(name = "is_email_verified", nullable = false)
-  private boolean emailVerified;
-
-  @Column(name = "last_login")
-  private Instant lastLogin;
-
   /**
    * Required by JPA
    */
@@ -53,10 +42,10 @@ public class UserAuth extends AuditedEntity {
    * Creates credentials for the given {@link User}. The Primary Key will be inherited from the user
    * (see {@link MapsId}).
    */
-  public UserAuth(String passwordHash) {
-    this.passwordHash = passwordHash;
-    this.emailVerified = false;
-  }
+  //public UserAuth(String passwordHash) {
+  //  this.passwordHash = passwordHash;
+  //  this.emailVerified = false;
+  //}
 
   public UUID getId() {
     return id;
@@ -64,30 +53,6 @@ public class UserAuth extends AuditedEntity {
 
   public void setId(UUID id) {
     this.id = id;
-  }
-
-  public String getPasswordHash() {
-    return passwordHash;
-  }
-
-  public void setPasswordHash(String passwordHash) {
-    this.passwordHash = passwordHash;
-  }
-
-  public boolean getEmailVerified() {
-    return emailVerified;
-  }
-
-  public void setEmailVerified(boolean verified) {
-    this.emailVerified = verified;
-  }
-
-  public Instant getLastLogin() {
-    return lastLogin;
-  }
-
-  public void setLastLogin(Instant lastLogin) {
-    this.lastLogin = lastLogin;
   }
 
   public User getUser() {
@@ -115,10 +80,7 @@ public class UserAuth extends AuditedEntity {
   public String toString() {
     return "UserAuth{" +
         "id=" + id +
-        ", passwordHash='" + passwordHash + '\'' +
-        ", verified=" + emailVerified +
-        ", lastLogin=" + lastLogin +
-        super.toString() + 
+        super.toString() +
         '}';
   }
 }

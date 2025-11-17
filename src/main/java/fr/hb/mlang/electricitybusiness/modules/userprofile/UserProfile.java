@@ -12,6 +12,7 @@ import jakarta.persistence.OneToOne;
 import jakarta.persistence.Table;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Past;
+import jakarta.validation.constraints.Pattern;
 import jakarta.validation.constraints.Size;
 import java.time.LocalDate;
 import java.util.Objects;
@@ -48,6 +49,11 @@ public class UserProfile extends AuditedEntity {
   @Size(max = 512)
   @Column(name = "home_address", nullable = false, length = 512)
   private String homeAddress;
+
+  @Size(max = 15)
+  @Pattern(regexp = "^\\+?[0-9 .()-]{7,15}$")
+  @Column(name = "phone_number", unique = true, length = 15)
+  private String phoneNumber;
 
   @Column(columnDefinition = "JSON", name = "preferences", nullable = false)
   private String preferences = "{}";
@@ -120,6 +126,14 @@ public class UserProfile extends AuditedEntity {
 
   public void setHomeAddress(String homeAddress) {
     this.homeAddress = homeAddress;
+  }
+
+  public String getPhoneNumber() {
+    return phoneNumber;
+  }
+
+  public void setPhoneNumber(String phoneNumber) {
+    this.phoneNumber = phoneNumber;
   }
 
   public String getPreferences() {

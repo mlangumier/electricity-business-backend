@@ -6,7 +6,6 @@ import fr.hb.mlang.electricitybusiness.modules.tokens.email.EmailVerificationTok
 import fr.hb.mlang.electricitybusiness.modules.tokens.refresh.RefreshToken;
 import fr.hb.mlang.electricitybusiness.modules.tokens.refresh.RefreshTokenRepository;
 import fr.hb.mlang.electricitybusiness.modules.user.domain.User;
-import fr.hb.mlang.electricitybusiness.modules.user.domain.UserAuth;
 import fr.hb.mlang.electricitybusiness.modules.user.repository.UserRepository;
 import fr.hb.mlang.electricitybusiness.modules.userprofile.UserProfile;
 import fr.hb.mlang.electricitybusiness.security.CookieUtil;
@@ -85,15 +84,10 @@ public class AuthServiceImpl implements AuthService {
     }
 
     // Create User
-    User user = new User();
-    user.setEmail(req.email().toLowerCase());
-    if (req.phoneNumber() != null) {
-      user.setPhoneNumber(req.phoneNumber());
-    }
-
-    // Create & set UserAuth password
-    UserAuth userAuth = new UserAuth(this.encoder.encode(req.password()));
-    user.setAuth(userAuth);
+    User user = new User(
+        req.email().toLowerCase(),
+        this.encoder.encode(req.password())
+    );
 
     // Create & set UserProfile
     UserProfile profile = new UserProfile(
@@ -102,9 +96,10 @@ public class AuthServiceImpl implements AuthService {
         req.dateOfBirth(),
         req.homeAddress()
     );
-    if (req.avatar() != null) {
-      profile.setAvatar(req.avatar());
-    }
+
+    if (req.phoneNumber() != null) profile.setPhoneNumber(req.phoneNumber());
+    if (req.avatar() != null) profile.setAvatar(req.avatar());
+
     user.setProfile(profile);
 
     // Create & set EmailVerificationToken
@@ -138,16 +133,17 @@ public class AuthServiceImpl implements AuthService {
     }
 
     // Use our adapter to handle data from both User & UserAuth
-    SecurityUserDetails userDetails = SecurityUserDetails.from(tokenEntity.getUser());
+    //SecurityUserDetails userDetails = SecurityUserDetails.from(tokenEntity.getUser()); //TODO: auth
+    User user = new User(); //TODO: Change this
 
-    if (userDetails.auth().getEmailVerified()) {
-      throw new UserAlreadyVerifiedException(userDetails.user().getEmail());
+    if (user.getEmailVerified()) {
+      throw new UserAlreadyVerifiedException(user.getEmail());
     }
 
     // Verifications checks passed -> set user verified & delete email verification token
-    userDetails.auth().setEmailVerified(true);
-    userDetails.user().setEmailVerificationToken(null);
-    userRepository.save(userDetails.user());
+    user.setEmailVerified(true);
+    user.setEmailVerificationToken(null);
+    userRepository.save(user);
 
     //TODO: send welcome email with link to login page (& optional: short description of available features)
   }
@@ -165,20 +161,20 @@ public class AuthServiceImpl implements AuthService {
         credentials.password()
     ));
 
-    SecurityUserDetails userDetails = (SecurityUserDetails) authentication.getPrincipal();
-    User user = userRepository.findByEmail(userDetails.getUsername()).orElseThrow();
+    User user = (User) authentication.getPrincipal();
+    //User user = userRepository.findByEmail(userDetails.getUsername()).orElseThrow();
 
     // Ideally: if the user has a token for the same device, remove it and add the new token instead.
 
     // Generate refresh token & set cookie in response headers
-    String rawRefreshToken = jwtService.generateRefreshToken(userDetails.getUsername());
+    String rawRefreshToken = jwtService.generateRefreshToken(user.getUsername());
     String hashRefreshtoken = argon2Encoder.encode(rawRefreshToken);
     RefreshToken refreshToken = new RefreshToken(
         hashRefreshtoken,
         Instant.now().plus(jwtProps.refreshExpiration())
     );
     user.addRefreshToken(refreshToken);
-    user.getAuth().setLastLogin(Instant.now());
+    user.setLastLogin(Instant.now());
     userRepository.save(user);
 
     response.addHeader(
@@ -189,7 +185,7 @@ public class AuthServiceImpl implements AuthService {
     );
 
     // Generate accessToken & return response
-    String accessToken = jwtService.generateAccessToken(userDetails.getUsername());
+    String accessToken = jwtService.generateAccessToken(user.getUsername());
 
     return mapper.toLoginResponseDto(accessToken, user);
   }
@@ -213,15 +209,15 @@ public class AuthServiceImpl implements AuthService {
       throw new RefreshTokenException("Couldn't extract email from refresh token.");
     }
 
-    SecurityUserDetails userDetails = (SecurityUserDetails) userDetailsService.loadUserByUsername(
-        email);
-    if (!userDetails.auth().getEmailVerified()) {
+    User user = (User) userDetailsService.loadUserByUsername(email);
+
+    if (!user.getEmailVerified()) {
       throw new RefreshTokenException("User is not verified.");
     }
 
-    String newAccessToken = jwtService.generateAccessToken(userDetails.getUsername());
+    String newAccessToken = jwtService.generateAccessToken(user.getUsername());
 
-    return mapper.toLoginResponseDto(newAccessToken, userDetails.user());
+    return mapper.toLoginResponseDto(newAccessToken, user);
   }
 
   @Override
@@ -243,16 +239,15 @@ public class AuthServiceImpl implements AuthService {
       throw new RefreshTokenException("Couldn't extract email from refresh token.");
     }
 
-    SecurityUserDetails userDetails = (SecurityUserDetails) userDetailsService.loadUserByUsername(
-        email);
+    User user = (User) userDetailsService.loadUserByUsername(email);
 
-    RefreshToken refreshToken = userDetails.user().getRefreshTokens()
+    RefreshToken refreshToken = user.getRefreshTokens()
         .stream()
         .filter(token -> argon2Encoder.matches(cookieRefreshToken, token.getTokenHash()))
         .findFirst().orElseThrow(() -> new RefreshTokenException("Couldn't find refresh token"));
 
-    userDetails.user().removeRefreshToken(refreshToken);
-    userRepository.save(userDetails.user());
+    user.removeRefreshToken(refreshToken);
+    userRepository.save(user);
 
     response.addHeader(
         HttpHeaders.SET_COOKIE,

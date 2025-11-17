@@ -43,7 +43,7 @@ public class ApplicationConfig {
   public UserDetailsService userDetailsService() {
     return username -> userRepository
         .findByEmail(username)
-        .map(SecurityUserDetails::from)
+        //.map(SecurityUserDetails::from) //TODO: auth
         .orElseThrow(() -> new UsernameNotFoundException(
             "Couldn't find user with email: " + username));
   }

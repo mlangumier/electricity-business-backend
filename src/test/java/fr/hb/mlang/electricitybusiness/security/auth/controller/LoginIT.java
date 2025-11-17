@@ -113,7 +113,8 @@ class LoginIT extends DatabaseConfigIT {
 
   private void generateUserValid() {
     User user = new User("user@test.com", null);
-    user.setAuth(new UserAuth(encoder.encode("password")));
+    //TODO: auth
+    //user.setAuth(new UserAuth(encoder.encode("password")));
     user.setProfile(new UserProfile(
         "User",
         "Adminson",
@@ -126,7 +127,8 @@ class LoginIT extends DatabaseConfigIT {
 
   private void generateUserUnverified() {
     User user = new User("unverified-user@test.com", null);
-    user.setAuth(new UserAuth(encoder.encode("password")));
+    //TODO: auth
+    //user.setAuth(new UserAuth(encoder.encode("password")));
     user.setProfile(new UserProfile(
         "Unv",
         "Erified",
