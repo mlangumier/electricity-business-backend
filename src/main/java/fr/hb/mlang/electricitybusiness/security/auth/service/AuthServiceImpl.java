@@ -4,12 +4,10 @@ import fr.hb.mlang.electricitybusiness.config.AppProperties;
 import fr.hb.mlang.electricitybusiness.modules.tokens.email.EmailVerificationToken;
 import fr.hb.mlang.electricitybusiness.modules.tokens.email.EmailVerificationTokenRepository;
 import fr.hb.mlang.electricitybusiness.modules.tokens.refresh.RefreshToken;
-import fr.hb.mlang.electricitybusiness.modules.tokens.refresh.RefreshTokenRepository;
 import fr.hb.mlang.electricitybusiness.modules.user.domain.User;
 import fr.hb.mlang.electricitybusiness.modules.user.repository.UserRepository;
 import fr.hb.mlang.electricitybusiness.modules.userprofile.UserProfile;
 import fr.hb.mlang.electricitybusiness.security.CookieUtil;
-import fr.hb.mlang.electricitybusiness.security.auth.SecurityUserDetails;
 import fr.hb.mlang.electricitybusiness.security.auth.controller.AuthMapper;
 import fr.hb.mlang.electricitybusiness.security.auth.controller.dto.EmailAvailableRequest;
 import fr.hb.mlang.electricitybusiness.security.auth.controller.dto.LoginRequestDto;
@@ -29,6 +27,7 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.crypto.argon2.Argon2PasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -42,9 +41,8 @@ public class AuthServiceImpl implements AuthService {
   private final AuthenticationManager authManager;
   private final PasswordEncoder encoder;
   private final Argon2PasswordEncoder argon2Encoder;
-  private final UserRepository userRepository;
   private final EmailVerificationTokenRepository emailTokenRepository;
-  RefreshTokenRepository refreshTokenRepository;
+  private final UserRepository userRepository;
   private final UserDetailsService userDetailsService;
   private final AuthMapper mapper;
 
@@ -54,9 +52,8 @@ public class AuthServiceImpl implements AuthService {
       AuthenticationManager authManager,
       PasswordEncoder encoder,
       Argon2PasswordEncoder argon2Encoder,
-      UserRepository userRepository,
       EmailVerificationTokenRepository emailTokenRepository,
-      RefreshTokenRepository refreshTokenRepository,
+      UserRepository userRepository,
       UserDetailsService userDetailsService,
       AuthMapper mapper
   ) {
@@ -65,9 +62,8 @@ public class AuthServiceImpl implements AuthService {
     this.authManager = authManager;
     this.encoder = encoder;
     this.argon2Encoder = argon2Encoder;
-    this.userRepository = userRepository;
     this.emailTokenRepository = emailTokenRepository;
-    this.refreshTokenRepository = refreshTokenRepository;
+    this.userRepository = userRepository;
     this.userDetailsService = userDetailsService;
     this.mapper = mapper;
   }
@@ -97,8 +93,12 @@ public class AuthServiceImpl implements AuthService {
         req.homeAddress()
     );
 
-    if (req.phoneNumber() != null) profile.setPhoneNumber(req.phoneNumber());
-    if (req.avatar() != null) profile.setAvatar(req.avatar());
+    if (req.phoneNumber() != null) {
+      profile.setPhoneNumber(req.phoneNumber());
+    }
+    if (req.avatar() != null) {
+      profile.setAvatar(req.avatar());
+    }
 
     user.setProfile(profile);
 
@@ -123,6 +123,7 @@ public class AuthServiceImpl implements AuthService {
   public void verifyAccount(String token) {
     String tokenHash = VerificationToken.hashToken(token);
 
+    //TODO: replace the following by: extract userEmail, find user, check if user's token corresponds
     EmailVerificationToken tokenEntity = emailTokenRepository
         .findByTokenHash(tokenHash)
         .orElseThrow(() -> new EmailVerificationTokenException(
@@ -132,9 +133,7 @@ public class AuthServiceImpl implements AuthService {
       throw new EmailVerificationTokenException("Email verification token is expired.");
     }
 
-    // Use our adapter to handle data from both User & UserAuth
-    //SecurityUserDetails userDetails = SecurityUserDetails.from(tokenEntity.getUser()); //TODO: auth
-    User user = new User(); //TODO: Change this
+    User user = (User) userDetailsService.loadUserByUsername(tokenEntity.getUser().getEmail());
 
     if (user.getEmailVerified()) {
       throw new UserAlreadyVerifiedException(user.getEmail());

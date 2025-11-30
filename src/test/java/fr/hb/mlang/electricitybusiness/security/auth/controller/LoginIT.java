@@ -9,7 +9,6 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import fr.hb.mlang.electricitybusiness.config.DatabaseConfigIT;
 import fr.hb.mlang.electricitybusiness.modules.tokens.email.EmailVerificationToken;
 import fr.hb.mlang.electricitybusiness.modules.user.domain.User;
-import fr.hb.mlang.electricitybusiness.modules.user.domain.UserAuth;
 import fr.hb.mlang.electricitybusiness.modules.user.repository.UserRepository;
 import fr.hb.mlang.electricitybusiness.modules.userprofile.UserProfile;
 import fr.hb.mlang.electricitybusiness.security.auth.controller.dto.LoginResponseDto;
@@ -103,32 +102,30 @@ class LoginIT extends DatabaseConfigIT {
     assertNotNull(user);
     assertEquals(1, user.getRefreshTokens().size());
 
-    assertNotNull(user.getAuth().getLastLogin());
-    assert (user.getAuth().getLastLogin()).isAfter(Instant.now().minus(5, ChronoUnit.MINUTES));
-    assert (user.getAuth().getLastLogin()).isBefore(Instant.now());
+    assertNotNull(user.getLastLogin());
+    assert (user.getLastLogin()).isAfter(Instant.now().minus(5, ChronoUnit.MINUTES));
+    assert (user.getLastLogin()).isBefore(Instant.now());
 
     //TODO: Assert expected response <- set JsonTestHelper method to ignore IDs & dynamic
   }
 
 
   private void generateUserValid() {
-    User user = new User("user@test.com", null);
-    //TODO: auth
-    //user.setAuth(new UserAuth(encoder.encode("password")));
+    User user = new User("user@test.com", encoder.encode("password"));
+
     user.setProfile(new UserProfile(
         "User",
         "Adminson",
         LocalDate.of(1991, 1, 1),
         "1 street of something, 69001, Lyon"
     ));
-    user.getAuth().setEmailVerified(true);
+    user.setEmailVerified(true);
     userRepository.save(user);
   }
 
   private void generateUserUnverified() {
-    User user = new User("unverified-user@test.com", null);
-    //TODO: auth
-    //user.setAuth(new UserAuth(encoder.encode("password")));
+    User user = new User("unverified-user@test.com", encoder.encode("password"));
+
     user.setProfile(new UserProfile(
         "Unv",
         "Erified",

@@ -29,7 +29,7 @@ import org.springframework.test.web.servlet.MockMvc;
 @SpringBootTest(webEnvironment = WebEnvironment.MOCK)
 @AutoConfigureMockMvc
 @AutoConfigureTestDatabase(replace = Replace.NONE) // Keep TestContainers datasource
-public class RegisterAccountIT extends DatabaseConfigIT {
+class RegisterAccountIT extends DatabaseConfigIT {
 
   @Autowired
   private MockMvc mockMvc;
@@ -62,7 +62,6 @@ public class RegisterAccountIT extends DatabaseConfigIT {
     // Check that User & related entities have been created as well
     User user = userRepository.findByEmail("test@test.com").orElse(null);
     assertNotNull(user);
-    assertNotNull(user.getAuth());
     assertNotNull(user.getProfile());
     assertNotNull(user.getEmailVerificationToken());
   }
@@ -86,7 +85,6 @@ public class RegisterAccountIT extends DatabaseConfigIT {
     // Check that User & related entities have been created as well
     User user = userRepository.findByEmail("test@test.com").orElse(null);
     assertNotNull(user);
-    assertNotNull(user.getAuth());
     assertNotNull(user.getProfile());
     assertNotNull(user.getEmailVerificationToken());
   }

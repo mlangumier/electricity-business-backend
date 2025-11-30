@@ -7,7 +7,6 @@ import fr.hb.mlang.electricitybusiness.config.DatabaseConfigIT;
 import fr.hb.mlang.electricitybusiness.modules.tokens.email.EmailVerificationToken;
 import fr.hb.mlang.electricitybusiness.modules.tokens.email.EmailVerificationTokenRepository;
 import fr.hb.mlang.electricitybusiness.modules.user.domain.User;
-import fr.hb.mlang.electricitybusiness.modules.user.domain.UserAuth;
 import fr.hb.mlang.electricitybusiness.modules.user.repository.UserRepository;
 import fr.hb.mlang.electricitybusiness.modules.userprofile.UserProfile;
 import fr.hb.mlang.electricitybusiness.security.jwt.VerificationToken;
@@ -35,7 +34,7 @@ import org.springframework.test.web.servlet.MockMvc;
 @SpringBootTest(webEnvironment = WebEnvironment.MOCK)
 @AutoConfigureMockMvc
 @AutoConfigureTestDatabase(replace = Replace.NONE)
-public class VerifyAccountIT extends DatabaseConfigIT {
+class VerifyAccountIT extends DatabaseConfigIT {
 
   @Autowired
   private MockMvc mockMvc;
@@ -66,7 +65,7 @@ public class VerifyAccountIT extends DatabaseConfigIT {
 
     // Check that the user is now verified
     User user = userRepository.findByEmail(seed.user.getEmail()).orElseThrow();
-    Assertions.assertTrue(user.getAuth().getEmailVerified());
+    Assertions.assertTrue(user.getEmailVerified());
 
     // Check that the emailVerificationToken has been deleted from the database
     EmailVerificationToken emailToken = emailRepository
@@ -83,13 +82,13 @@ public class VerifyAccountIT extends DatabaseConfigIT {
     Seed seed = this.seedUnverifiedUser(5, ChronoUnit.MINUTES);
 
     // Manually verify the user
-    seed.user.getAuth().setEmailVerified(true);
+    seed.user.setEmailVerified(true);
     seed.user.setEmailVerificationToken(null);
     userRepository.saveAndFlush(seed.user);
 
     // Verify data has been modified as expected
     User user = userRepository.findByEmail(seed.user.getEmail()).orElseThrow();
-    Assertions.assertTrue(user.getAuth().getEmailVerified());
+    Assertions.assertTrue(user.getEmailVerified());
     Assertions.assertNull(user.getEmailVerificationToken());
 
     // Test - Verify the user and expect it to fail (token not found)
@@ -140,9 +139,8 @@ public class VerifyAccountIT extends DatabaseConfigIT {
    * Create a fake user for testing
    */
   private Seed seedUnverifiedUser(int expirationTime, ChronoUnit unit) {
-    User user = new User("test@test.com", null);
-    //TODO: auth
-    //user.setAuth(new UserAuth(encoder.encode("password")));
+    User user = new User("test@test.com", encoder.encode("password"));
+
     user.setProfile(new UserProfile(
         "Test",
         "Testson",

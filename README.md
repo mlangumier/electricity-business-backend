@@ -443,7 +443,7 @@ Spécificities :
 
 - Most entities will extend `AuditedEntity` in order to keep track of commonly logged fields such as
   `createdAt` or `updatedAt`.
-- In our code, `User` will be separated into two entities: `User` and `UserAuth`, and
+- (deprecated) In our code, `User` will be separated into two entities: `User` and `UserAuth`, and
   `SecurityUserDetailsService` will implement `UserDetails` and have both entities as fields. That
   way, we keep both purposes of the entity separate while still being able to use them together.
 

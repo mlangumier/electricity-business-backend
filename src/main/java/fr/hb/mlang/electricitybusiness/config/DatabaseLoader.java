@@ -10,7 +10,6 @@ import fr.hb.mlang.electricitybusiness.modules.tokens.email.EmailVerificationTok
 import fr.hb.mlang.electricitybusiness.modules.tokens.password.PasswordResetToken;
 import fr.hb.mlang.electricitybusiness.modules.tokens.refresh.RefreshToken;
 import fr.hb.mlang.electricitybusiness.modules.user.domain.User;
-import fr.hb.mlang.electricitybusiness.modules.user.domain.UserAuth;
 import fr.hb.mlang.electricitybusiness.modules.user.repository.UserRepository;
 import fr.hb.mlang.electricitybusiness.modules.userprofile.UserProfile;
 import fr.hb.mlang.electricitybusiness.security.jwt.VerificationToken;
@@ -54,11 +53,8 @@ public class DatabaseLoader implements ApplicationRunner {
       log.info("No user found. Generation data...");
 
       //--- User 1 (user, userAuth, userProfile, all 3 tokens)
-      User user = userRepository.save(new User("matt@test.com",null));
-      //TODO:
-      //UserAuth userAuth = new UserAuth(encoder.encode("password"));
-      //userAuth.setEmailVerified(true);
-      //user.setAuth(userAuth);
+      User user = new User("matt@test.com", encoder.encode("matt@password"));
+      user.setEmailVerified(true);
       UserProfile profile = new UserProfile("Mathieu", "Langumier", LocalDate.of(1992, 2, 24), "24 place Jean Jaurès, St-Etienne", "https://avatar.iran.liara.run/public");
       user.setProfile(profile);
       user.setEmailVerificationToken(new EmailVerificationToken(VerificationToken.hashToken(VerificationToken.generateRawToken()), Instant.now().plus(jwtProps.verificationExpiration())));
@@ -67,10 +63,7 @@ public class DatabaseLoader implements ApplicationRunner {
       userRepository.save(user);
 
       //---- User 2 (user, userAuth, userProfile, emailVerificationToken)
-      User user2 = userRepository.save(new User("sam@test.com", "0600000000"));
-      //TODO:
-      //UserAuth userAuth2 = new UserAuth(encoder.encode("password"));
-      //user2.setAuth(userAuth2);
+      User user2 = new User("sam@test.com", encoder.encode("sam@password"));
       UserProfile profile2 = new UserProfile("Sam", "Lang", LocalDate.of(1991, 1, 1), "24 place Jean Jaurès", null);
       user2.setProfile(profile2);
       user.setEmailVerificationToken(new EmailVerificationToken(VerificationToken.hashToken(VerificationToken.generateRawToken()), Instant.now().plus(jwtProps.verificationExpiration())));

@@ -1,13 +1,12 @@
 package fr.hb.mlang.electricitybusiness.security;
 
-import fr.hb.mlang.electricitybusiness.modules.user.domain.User;
 import fr.hb.mlang.electricitybusiness.modules.user.repository.UserRepository;
-import fr.hb.mlang.electricitybusiness.security.auth.SecurityUserDetails;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Primary;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.argon2.Argon2PasswordEncoder;
@@ -35,7 +34,7 @@ public class ApplicationConfig {
   }
 
   /**
-   * Finds a {@link User} using their username (email) to authenticate them.
+   * Finds a {@link UserDetails} using their username (email) to authenticate them.
    *
    * @return the found user.
    */
@@ -43,9 +42,8 @@ public class ApplicationConfig {
   public UserDetailsService userDetailsService() {
     return username -> userRepository
         .findByEmail(username)
-        //.map(SecurityUserDetails::from) //TODO: auth
         .orElseThrow(() -> new UsernameNotFoundException(
-            "Couldn't find user with email: " + username));
+            "Failed to find user with email: " + username));
   }
 
   /**
