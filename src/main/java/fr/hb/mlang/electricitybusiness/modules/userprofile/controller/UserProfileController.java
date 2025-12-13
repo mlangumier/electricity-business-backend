@@ -25,6 +25,4 @@ public class UserProfileController {
     GetProfileResponseDto profileDto = profileService.getProfile(user.getId());
     return ResponseEntity.status(HttpStatus.OK).body(profileDto);
   }
-
-  ;
 }
