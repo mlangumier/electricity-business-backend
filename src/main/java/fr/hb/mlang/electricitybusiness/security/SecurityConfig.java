@@ -48,9 +48,9 @@ public class SecurityConfig {
   @Bean
   CorsConfigurationSource corsConfigurationSource() {
     CorsConfiguration config = new CorsConfiguration();
-    config.setAllowedOrigins(List.of(this.appProperties.baseUrl()));
+     config.setAllowedOrigins(List.of(this.appProperties.baseUrl()));
     config.setAllowedMethods(List.of("GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"));
-    config.setAllowedHeaders(List.of("Content-Type", "Authorization"));
+    config.setAllowedHeaders(List.of("Content-Type", "Authorization", "X-Requested-With"));
     config.setMaxAge(Duration.ofHours(1));
     config.setAllowCredentials(true);
 
