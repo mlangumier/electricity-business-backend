@@ -1,5 +1,5 @@
 ### Check is email available
-POST {{baseUrl}}/email-available
+POST {{serverUrl}}/email-available
 Content-Type: application/json
 
 {
@@ -7,7 +7,7 @@ Content-Type: application/json
 }
 
 ### REGISTER
-POST {{baseUrl}}/register
+POST {{serverUrl}}/register
 Content-Type: application/json
 
 {
@@ -20,7 +20,7 @@ Content-Type: application/json
 }
 
 ### LOGIN & Set accessToken
-POST {{baseUrl}}/auth/login
+POST {{serverUrl}}/auth/login
 Content-Type: application/json
 
 {
@@ -31,15 +31,15 @@ Content-Type: application/json
 > {% client.global.set("accessToken", response.body.accessToken); %}
 
 ### TEST - Get user profile
-GET {{baseUrl}}/user/profile
+GET {{serverUrl}}/user/profile
 Authorization: Bearer {{accessToken}}
 
 ### REFRESH
-POST {{baseUrl}}/auth/refresh
+POST {{serverUrl}}/auth/refresh
 Content-Type: application/json
 
 > {% client.global.set("accessToken", response.body.accessToken) %}
 
 ### LOGOUT
-POST {{baseUrl}}/auth/logout
+POST {{serverUrl}}/auth/logout
 #Authorization: Bearer {{accessToken}}

@@ -228,7 +228,7 @@ Note: profiles (`dev`, `prod`, etc.) are also set there and might need to be set
   # The following values are examples and should not be used for live applications 
 
   # App 
-  APP_BASE_URL=http://localhost:8080  # Value for local development
+  APP_BASE_URL=http://localhost:4200  # Value for local development
 
   # Database
   DATABASE_URL=localhost:3306

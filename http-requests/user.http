@@ -1,5 +1,5 @@
 ### Login
-POST {{baseUrl}}/auth/login
+POST {{serverUrl}}/auth/login
 Content-Type: application/json
 
 {
@@ -10,8 +10,8 @@ Content-Type: application/json
 > {% client.global.set("accessToken", response.body.accessToken); %}
 
 ### Get Profile data
-GET {{baseUrl}}/user/profile
+GET {{serverUrl}}/user/profile
 Authorization: Bearer {{accessToken}}
 
 ### Fail: Get Profile data without accessToken
-GET {{baseUrl}}/user/profile
+GET {{serverUrl}}/user/profile
