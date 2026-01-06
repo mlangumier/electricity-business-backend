@@ -30,9 +30,9 @@ public class AuthController {
   //TODO: Check & correct HttpStatus & responses
 
   @PostMapping("/email-available")
-  public ResponseEntity<Boolean> checkEmailIsAvailable(@Valid @RequestBody EmailAvailableRequest request) {
-    Boolean isAvailable = authService.checkIsEmailAvailable(request);
-    return ResponseEntity.status(HttpStatus.OK).body(isAvailable);
+  public ResponseEntity<String> checkEmailIsAvailable(@Valid @RequestBody EmailAvailableRequest request) {
+    authService.checkIsEmailAvailable(request);
+    return ResponseEntity.status(HttpStatus.OK).body("Email is available");
   }
 
   @PostMapping("/register")
