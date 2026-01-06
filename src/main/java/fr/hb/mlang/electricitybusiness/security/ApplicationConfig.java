@@ -5,6 +5,7 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Primary;
 import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.authentication.dao.DaoAuthenticationProvider;
 import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
@@ -20,6 +21,24 @@ public class ApplicationConfig {
 
   public ApplicationConfig(UserRepository userRepository) {
     this.userRepository = userRepository;
+  }
+
+  /**
+   * Provides the authentication manager with the correct objects to authenticate the user
+   *
+   * @param userDetailsService the service used to authenticate the user
+   * @param passwordEncoder    the encoder used to encode the user's password
+   * @return the authentication provider.
+   */
+  @Bean
+  public DaoAuthenticationProvider authenticationProvider(
+      UserDetailsService userDetailsService,
+      PasswordEncoder passwordEncoder
+  ) {
+    DaoAuthenticationProvider provider = new DaoAuthenticationProvider();
+    provider.setUserDetailsService(userDetailsService);
+    provider.setPasswordEncoder(passwordEncoder);
+    return provider;
   }
 
   /**
@@ -63,7 +82,7 @@ public class ApplicationConfig {
    * @return the argon2 password encoder.
    */
   @Bean
-  public Argon2PasswordEncoder argon2() {
+  public Argon2PasswordEncoder refreshTokenEncoder() {
     return Argon2PasswordEncoder.defaultsForSpringSecurity_v5_8();
   }
 }

@@ -145,7 +145,8 @@ class VerifyAccountIT extends DatabaseConfigIT {
         "Test",
         "Testson",
         LocalDate.of(1990, 1, 1),
-        "21 Test street, 69000, Lyon"
+        "21 Test street, 69000, Lyon",
+        null
     ));
     String rawToken = VerificationToken.generateRawToken();
     String generatedToken = VerificationToken.hashToken(rawToken);

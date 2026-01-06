@@ -69,11 +69,10 @@ public class UserProfile extends AuditedEntity {
   public UserProfile() {
   }
 
-  public UserProfile(String firstName, String lastName, LocalDate dateOfBirth, String homeAddress) {
+  public UserProfile(String firstName, String lastName, LocalDate dateOfBirth) {
     this.firstName = firstName;
     this.lastName = lastName;
     this.dateOfBirth = dateOfBirth;
-    this.homeAddress = homeAddress;
     this.preferences = "{}";
   }
 
@@ -84,7 +83,8 @@ public class UserProfile extends AuditedEntity {
       String homeAddress,
       String avatar
   ) {
-    this(firstName, lastName, dateOfBirth, homeAddress);
+    this(firstName, lastName, dateOfBirth);
+    this.homeAddress = homeAddress;
     this.avatar = avatar;
   }
 

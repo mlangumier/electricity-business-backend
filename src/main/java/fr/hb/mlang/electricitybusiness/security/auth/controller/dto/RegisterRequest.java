@@ -39,14 +39,14 @@ public record RegisterRequest(
     @NotNull
     @Past
     @MinAge(18)
-    LocalDate dateOfBirth,
+    LocalDate dateOfBirth
 
-    @NotBlank
-    @Size(max = 512)
-    String homeAddress,
+    //@NotBlank
+    //@Size(max = 512)
+    //String homeAddress,
 
-    @URL
-    String avatar
+    //@URL
+    //String avatar
 ) {
 
 }

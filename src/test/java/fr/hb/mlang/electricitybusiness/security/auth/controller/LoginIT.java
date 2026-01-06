@@ -117,7 +117,8 @@ class LoginIT extends DatabaseConfigIT {
         "User",
         "Adminson",
         LocalDate.of(1991, 1, 1),
-        "1 street of something, 69001, Lyon"
+        "1 street of something, 69001, Lyon",
+        null
     ));
     user.setEmailVerified(true);
     userRepository.save(user);
@@ -130,7 +131,8 @@ class LoginIT extends DatabaseConfigIT {
         "Unv",
         "Erified",
         LocalDate.of(1991, 2, 2),
-        "2 street of something, 69002, Lyon"
+        "2 street of something, 69002, Lyon",
+        null
     ));
     String rawToken = VerificationToken.generateRawToken();
     String generatedToken = VerificationToken.hashToken(rawToken);

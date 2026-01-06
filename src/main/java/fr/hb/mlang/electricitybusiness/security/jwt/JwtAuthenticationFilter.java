@@ -2,7 +2,6 @@ package fr.hb.mlang.electricitybusiness.security.jwt;
 
 import com.auth0.jwt.exceptions.TokenExpiredException;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import fr.hb.mlang.electricitybusiness.security.ApplicationConfig;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
@@ -24,18 +23,15 @@ import org.springframework.web.filter.OncePerRequestFilter;
 public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
   private final JwtService jwtService;
-  private final ApplicationConfig appConfig;
   private final UserDetailsService userDetailsService;
   private final ObjectMapper objectMapper;
 
   public JwtAuthenticationFilter(
       JwtService jwtService,
-      ApplicationConfig appConfig,
       UserDetailsService userDetailsService,
       ObjectMapper objectMapper
   ) {
     this.jwtService = jwtService;
-    this.appConfig = appConfig;
     this.userDetailsService = userDetailsService;
     this.objectMapper = objectMapper;
   }
@@ -80,7 +76,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
     } catch (TokenExpiredException e) {
       throwJwtException(response, "Access token expired", "TOKEN_EXPIRED");
     } catch (Exception e) {
-      throw new AuthenticationServiceException("Failed to authenticate user: " + e.getMessage());
+      throwJwtException(response, "Failed to authenticate user: " + e.getMessage(), "AUTH_FAILURE");
     }
   }
 

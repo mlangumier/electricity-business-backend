@@ -27,7 +27,6 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
-import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.crypto.argon2.Argon2PasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -40,7 +39,7 @@ public class AuthServiceImpl implements AuthService {
   private final JwtService jwtService;
   private final AuthenticationManager authManager;
   private final PasswordEncoder encoder;
-  private final Argon2PasswordEncoder argon2Encoder;
+  private final Argon2PasswordEncoder refreshTokenEncoder;
   private final EmailVerificationTokenRepository emailTokenRepository;
   private final UserRepository userRepository;
   private final UserDetailsService userDetailsService;
@@ -51,7 +50,7 @@ public class AuthServiceImpl implements AuthService {
       JwtService jwtService,
       AuthenticationManager authManager,
       PasswordEncoder encoder,
-      Argon2PasswordEncoder argon2Encoder,
+      Argon2PasswordEncoder refreshTokenEncoder,
       EmailVerificationTokenRepository emailTokenRepository,
       UserRepository userRepository,
       UserDetailsService userDetailsService,
@@ -61,7 +60,7 @@ public class AuthServiceImpl implements AuthService {
     this.jwtService = jwtService;
     this.authManager = authManager;
     this.encoder = encoder;
-    this.argon2Encoder = argon2Encoder;
+    this.refreshTokenEncoder = refreshTokenEncoder;
     this.emailTokenRepository = emailTokenRepository;
     this.userRepository = userRepository;
     this.userDetailsService = userDetailsService;
@@ -69,8 +68,10 @@ public class AuthServiceImpl implements AuthService {
   }
 
   @Override
-  public Boolean checkIsEmailAvailable(EmailAvailableRequest request) {
-    return userRepository.findByEmail(request.email()).isEmpty();
+  public void checkIsEmailAvailable(EmailAvailableRequest req) {
+    if (userRepository.findByEmail(req.email()).isPresent()) {
+      throw new EmailAlreadyInUseException(req.email());
+    }
   }
 
   @Override
@@ -80,24 +81,13 @@ public class AuthServiceImpl implements AuthService {
     }
 
     // Create User
-    User user = new User(
-        req.email().toLowerCase(),
-        this.encoder.encode(req.password())
-    );
+    User user = new User(req.email().toLowerCase(), this.encoder.encode(req.password()));
 
     // Create & set UserProfile
-    UserProfile profile = new UserProfile(
-        req.firstName(),
-        req.lastName(),
-        req.dateOfBirth(),
-        req.homeAddress()
-    );
+    UserProfile profile = new UserProfile(req.firstName(), req.lastName(), req.dateOfBirth());
 
     if (req.phoneNumber() != null) {
       profile.setPhoneNumber(req.phoneNumber());
-    }
-    if (req.avatar() != null) {
-      profile.setAvatar(req.avatar());
     }
 
     user.setProfile(profile);
@@ -154,6 +144,7 @@ public class AuthServiceImpl implements AuthService {
       HttpServletResponse response
   ) {
     //TODO: find the user first using credentials.email & check if verified before allowing authentication
+    //TODO: check if the user is already authenticated (check auth interceptor)
 
     Authentication authentication = authManager.authenticate(new UsernamePasswordAuthenticationToken(
         credentials.email(),
@@ -167,7 +158,7 @@ public class AuthServiceImpl implements AuthService {
 
     // Generate refresh token & set cookie in response headers
     String rawRefreshToken = jwtService.generateRefreshToken(user.getUsername());
-    String hashRefreshtoken = argon2Encoder.encode(rawRefreshToken);
+    String hashRefreshtoken = refreshTokenEncoder.encode(rawRefreshToken);
     RefreshToken refreshToken = new RefreshToken(
         hashRefreshtoken,
         Instant.now().plus(jwtProps.refreshExpiration())
@@ -242,7 +233,7 @@ public class AuthServiceImpl implements AuthService {
 
     RefreshToken refreshToken = user.getRefreshTokens()
         .stream()
-        .filter(token -> argon2Encoder.matches(cookieRefreshToken, token.getTokenHash()))
+        .filter(token -> refreshTokenEncoder.matches(cookieRefreshToken, token.getTokenHash()))
         .findFirst().orElseThrow(() -> new RefreshTokenException("Couldn't find refresh token"));
 
     user.removeRefreshToken(refreshToken);

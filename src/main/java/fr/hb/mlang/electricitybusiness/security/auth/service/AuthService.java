@@ -17,9 +17,8 @@ public interface AuthService {
    * available.
    *
    * @param request Object containing the email with data validation.
-   * @return {true} is the email is available, {false} if already in use.
    */
-  Boolean checkIsEmailAvailable(EmailAvailableRequest request);
+  void checkIsEmailAvailable(EmailAvailableRequest request);
 
   /**
    * Registers the new {@link User} and emails them a link with a verification token so they can
