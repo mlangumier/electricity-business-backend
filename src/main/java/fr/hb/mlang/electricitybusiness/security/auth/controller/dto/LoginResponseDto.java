@@ -9,7 +9,6 @@ public record LoginResponseDto(
 ) {
 
   public record User(
-      UUID id,
       String email,
       Role role,
       Profile profile
