@@ -214,30 +214,33 @@ public class AuthServiceImpl implements AuthService {
   @Transactional
   public void logout(HttpServletRequest request, HttpServletResponse response) {
     String cookieRefreshToken = CookieUtil.readRefreshTokenCookie(request.getCookies());
-    if (cookieRefreshToken == null) {
-      throw new RefreshTokenException("Refresh token missing from request cookies.");
+    //TODO: handle refresh in frontend
+    //if (cookieRefreshToken == null) {
+    //  throw new RefreshTokenException("Refresh token missing from request cookies.");
+    //}
+
+    if (cookieRefreshToken != null) {
+      jwtService.assertSignatureIsValid(cookieRefreshToken);
+
+      if (jwtService.isTokenExpired(cookieRefreshToken)) {
+        throw new RefreshTokenException("Refresh token is expired.");
+      }
+
+      String email = jwtService.extractUserEmail(cookieRefreshToken);
+      if (email == null || email.isBlank()) {
+        throw new RefreshTokenException("Couldn't extract email from refresh token.");
+      }
+
+      User user = (User) userDetailsService.loadUserByUsername(email);
+
+      RefreshToken refreshToken = user.getRefreshTokens()
+          .stream()
+          .filter(token -> refreshTokenEncoder.matches(cookieRefreshToken, token.getTokenHash()))
+          .findFirst().orElseThrow(() -> new RefreshTokenException("Couldn't find refresh token"));
+
+      user.removeRefreshToken(refreshToken);
+      userRepository.save(user);
     }
-
-    jwtService.assertSignatureIsValid(cookieRefreshToken);
-
-    if (jwtService.isTokenExpired(cookieRefreshToken)) {
-      throw new RefreshTokenException("Refresh token is expired.");
-    }
-
-    String email = jwtService.extractUserEmail(cookieRefreshToken);
-    if (email == null || email.isBlank()) {
-      throw new RefreshTokenException("Couldn't extract email from refresh token.");
-    }
-
-    User user = (User) userDetailsService.loadUserByUsername(email);
-
-    RefreshToken refreshToken = user.getRefreshTokens()
-        .stream()
-        .filter(token -> refreshTokenEncoder.matches(cookieRefreshToken, token.getTokenHash()))
-        .findFirst().orElseThrow(() -> new RefreshTokenException("Couldn't find refresh token"));
-
-    user.removeRefreshToken(refreshToken);
-    userRepository.save(user);
 
     response.addHeader(
         HttpHeaders.SET_COOKIE,

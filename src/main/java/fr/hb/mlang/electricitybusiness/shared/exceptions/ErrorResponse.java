@@ -2,7 +2,7 @@ package fr.hb.mlang.electricitybusiness.shared.exceptions;
 
 public class ErrorResponse {
 
-  private int statusCode;
+  private int statusCode; // Replace 'int' with 'HttpStatusCode' ?
   private String message;
 
   public ErrorResponse(int statusCode, String message) {
